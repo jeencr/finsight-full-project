@@ -30,11 +30,8 @@ urlpatterns = [
     # path("managetips/",views.managetips),
     path("add_capital/",views.add_capital),
     path("addcapital/",views.addcapital),
-    path("assignuser/",views.assign_users),
-
-
-
-
-
+    # path("assignuser/",views.assign_users),
+    path("view_company_fundamental/",views.view_company_fundamental),
+    path('show_graph_company/<str:symbol>/', views.show_graph_company),
 
 ]

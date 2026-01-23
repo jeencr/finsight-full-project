@@ -68,6 +68,7 @@ class User_request(models.Model):
     income=models.CharField(max_length=50)
     occupation=models.CharField(max_length=100)
     status=models.CharField(max_length=100,default='pending')
+    Expert = models.ForeignKey(Expert,on_delete=models.CASCADE)
 
 class Assgin_expert(models.Model):
     Expert=models.ForeignKey(Expert, on_delete=models.CASCADE)

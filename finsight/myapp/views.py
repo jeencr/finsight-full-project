@@ -7,7 +7,23 @@ from django.contrib.auth.models import User, Group
 
 # Create your views here.
 from myapp.models import *
+from myapp.sector_company import build_analysis_table
 from myapp.utils import scrape_ft
+import os
+import json
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
+import mplfinance as mpf
+import pandas as pd
+import yfinance as yf
+from datetime import datetime, timezone
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.cache import never_cache
+
+from myapp.sector_company import build_analysis_table
 
 
 def login_page(request):
@@ -190,16 +206,105 @@ def add_capital(request):
         comp.save()
     return redirect('/myapp/addcapital/')
 
-def assign_users(request):
+def assigned_users(request):
     id=request.user.id
     expertid = Expert.objects.get(LOGIN_id=id)
     assignuser = Assgin_expert.objects.filter(Expert=expertid)
     return render(request, 'expert/assignuser.html', {"assign_user": assignuser})
 
+def view_request_admin(request):
+    reqs = User_request.objects.filter(status='pending')
+    return render(request, 'admin/view_request.html', {"reqs": reqs})
 
 
 
-        #
 # def managetips(request):
 #     investers=Investers.objects.all()
 #     return render(request,'admin/viewinvesters.html',{"investers":investers})
+
+
+
+#####core#####
+def view_company_fundamental(request):
+    sector = request.GET.get("sector", "NIFTY AUTO")
+    rec_filter = request.GET.get("rec", "")
+    data = build_analysis_table(sector)
+    data = sorted(data, key=lambda x: x.get("Score", 0), reverse=True)
+
+    # Calculate recommendations
+    for item in data:
+        score = item.get("Score", 0)
+        if score >= 80:
+            item["Recommendation"] = "Strong Buy"
+        elif score >= 60:
+            item["Recommendation"] = "Buy"
+        elif score >= 40:
+            item["Recommendation"] = "Hold"
+        else:
+            item["Recommendation"] = "Avoid"
+
+    # Apply filter if selected
+    if rec_filter:
+        data = [d for d in data if d.get("Recommendation") == rec_filter]
+
+    # Calculate counts for display
+    counts = {
+        'strong_buy': len([d for d in data if d.get('Recommendation') == 'Strong Buy']),
+        'buy': len([d for d in data if d.get('Recommendation') == 'Buy']),
+        'hold': len([d for d in data if d.get('Recommendation') == 'Hold']),
+        'avoid': len([d for d in data if d.get('Recommendation') == 'Avoid']),
+    }
+
+    return render(request, "admin/view_company_fundamental.html", {
+        "data": data[:50],
+        "sector": sector,
+        "counts": counts
+    })
+
+
+import json
+import pandas as pd
+import yfinance as yf
+from django.shortcuts import render
+
+
+def show_graph_company(request, symbol):
+    yf_symbol = symbol + ".NS" if not symbol.endswith(".NS") else symbol
+    ticker = yf.Ticker(yf_symbol)
+    hist = ticker.history(period="6mo")
+
+    if hist.empty:
+        return render(request, "admin/show_graph_company.html", {
+            "symbol": symbol,
+            "ohlc": json.dumps({}),
+            "error": "No data available for this symbol"
+        })
+
+    hist.index = pd.to_datetime(hist.index)
+
+    # Get additional info for statistics
+    try:
+        info = ticker.info
+        current_price = info.get('currentPrice', hist['Close'].iloc[-1])
+    except:
+        current_price = hist['Close'].iloc[-1]
+
+    # Prepare OHLC data
+    ohlc_data = {
+        "dates": hist.index.strftime("%Y-%m-%d").tolist(),
+        "open": hist["Open"].round(2).tolist(),
+        "high": hist["High"].round(2).tolist(),
+        "low": hist["Low"].round(2).tolist(),
+        "close": hist["Close"].round(2).tolist(),
+        "volume": hist["Volume"].astype(int).tolist(),
+        "current_price": float(current_price),
+        "six_month_high": float(hist["High"].max()),
+        "six_month_low": float(hist["Low"].min()),
+        "avg_volume_30d": int(hist["Volume"].tail(30).mean())
+    }
+
+    return render(request, "admin/show_graph_company.html", {
+        "symbol": symbol,
+        "ohlc": json.dumps(ohlc_data),
+        "error": None
+    })

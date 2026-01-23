@@ -1,0 +1,450 @@
+{% extends 'admin/adminheader.html' %}
+{% block title %}
+FINSIGHT - {{ symbol }} CHART
+{% endblock title %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary rounded p-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h4 class="mb-0 text-white">{{ symbol }} – Stock Analysis</h4>
+                <small class="text-light">Last 6 Months Historical Data</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="/myapp/view_company_fundamental?sector=NIFTY AUTO" class="btn btn-sm btn-primary me-2">
+                    <i class="fa fa-arrow-left me-2"></i>Back to Analysis
+                </a>
+                <span class="badge bg-info">{{ ohlc.dates|length }} Trading Days</span>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-circle me-2"></i> {{ error }}
+        </div>
+        {% else %}
+        
+        <!-- Chart Controls -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-white mb-2">Chart Type</label>
+                        <select id="chartType" class="form-select bg-secondary text-white" onchange="drawChart()">
+                            <option value="line">Line Chart</option>
+                            <option value="candle">Candlestick</option>
+                            <option value="candle_vol" selected>Candlestick + Volume</option>
+                            <option value="area">Area Chart</option>
+                            <option value="ohlc">OHLC Bars</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-white mb-2">Technical Indicators</label>
+                        <select id="indicators" class="form-select bg-secondary text-white" onchange="addIndicator()">
+                            <option value="none">No Indicator</option>
+                            <option value="sma">Simple Moving Average (SMA 20)</option>
+                            <option value="ema">Exponential Moving Average (EMA 20)</option>
+                            <option value="bb">Bollinger Bands</option>
+                            <option value="rsi">RSI (14)</option>
+                            <option value="macd">MACD</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-white mb-2">Period</label>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-primary" onclick="updatePeriod('1mo')">1M</button>
+                            <button type="button" class="btn btn-outline-primary active" onclick="updatePeriod('6mo')">6M</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="updatePeriod('1y')">1Y</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="updatePeriod('2y')">2Y</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-body">
+                <div id="chart" style="height: 600px;"></div>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Current Price</h6>
+                        <h4 class="mb-0 text-success" id="currentPrice">Loading...</h4>
+                        <small class="text-light" id="priceChange">Loading...</small>
+                    </div>
+                    <i class="fa fa-line-chart fa-3x text-success"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">6-Month High</h6>
+                        <h4 class="mb-0 text-info" id="sixMonthHigh">Loading...</h4>
+                        <small class="text-light" id="highDate">Loading...</small>
+                    </div>
+                    <i class="fa fa-arrow-up fa-3x text-info"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">6-Month Low</h6>
+                        <h4 class="mb-0 text-warning" id="sixMonthLow">Loading...</h4>
+                        <small class="text-light" id="lowDate">Loading...</small>
+                    </div>
+                    <i class="fa fa-arrow-down fa-3x text-warning"></i>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Avg Volume</h6>
+                        <h4 class="mb-0 text-primary" id="avgVolume">Loading...</h4>
+                        <small class="text-light">Last 30 days</small>
+                    </div>
+                    <i class="fa fa-bar-chart fa-3x text-primary"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Table -->
+        <div class="card bg-dark border-0">
+            <div class="card-header">
+                <h5 class="text-white mb-0">Historical Price Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark align-middle mb-0">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Date</th>
+                                <th class="text-end">Open</th>
+                                <th class="text-end">High</th>
+                                <th class="text-end">Low</th>
+                                <th class="text-end">Close</th>
+                                <th class="text-end">Volume</th>
+                                <th class="text-center">Daily Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priceTable">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-light">Showing last 20 trading days</small>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showMoreData()">
+                            <i class="fa fa-refresh me-1"></i>Load More
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="downloadData()">
+                            <i class="fa fa-download me-1"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Load Plotly -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+// Parse data from Django template
+const data = JSON.parse('{{ ohlc|escapejs }}');
+
+// Calculate statistics
+function calculateStatistics() {
+    const closes = data.close;
+    const volumes = data.volume;
+    
+    // Current price (last close)
+    const currentPrice = closes[closes.length - 1];
+    const prevPrice = closes[closes.length - 2];
+    const priceChange = ((currentPrice - prevPrice) / prevPrice * 100).toFixed(2);
+    
+    // 6-month high/low
+    const sixMonthHigh = Math.max(...closes);
+    const sixMonthLow = Math.min(...closes);
+    const highIndex = closes.indexOf(sixMonthHigh);
+    const lowIndex = closes.indexOf(sixMonthLow);
+    
+    // Average volume (last 30 days)
+    const recentVolumes = volumes.slice(-30);
+    const avgVolume = Math.round(recentVolumes.reduce((a, b) => a + b, 0) / recentVolumes.length);
+    
+    // Update statistics display
+    document.getElementById('currentPrice').textContent = '₹' + currentPrice.toFixed(2);
+    document.getElementById('priceChange').innerHTML = 
+        priceChange >= 0 ? 
+        `<span class="text-success">+${priceChange}%</span>` : 
+        `<span class="text-danger">${priceChange}%</span>`;
+    
+    document.getElementById('sixMonthHigh').textContent = '₹' + sixMonthHigh.toFixed(2);
+    document.getElementById('highDate').textContent = data.dates[highIndex];
+    document.getElementById('sixMonthLow').textContent = '₹' + sixMonthLow.toFixed(2);
+    document.getElementById('lowDate').textContent = data.dates[lowIndex];
+    document.getElementById('avgVolume').textContent = avgVolume.toLocaleString();
+    
+    // Populate price table
+    populatePriceTable();
+}
+
+// Populate price table with last 20 days
+function populatePriceTable() {
+    const tableBody = document.getElementById('priceTable');
+    tableBody.innerHTML = '';
+    
+    const startIndex = Math.max(0, data.dates.length - 20);
+    
+    for (let i = startIndex; i < data.dates.length; i++) {
+        const change = i > 0 ? ((data.close[i] - data.close[i-1]) / data.close[i-1] * 100).toFixed(2) : 0;
+        const changeClass = change >= 0 ? 'text-success' : 'text-danger';
+        const changeSymbol = change >= 0 ? '+' : '';
+        
+        const row = `
+            <tr>
+                <td>${data.dates[i]}</td>
+                <td class="text-end">₹${data.open[i].toFixed(2)}</td>
+                <td class="text-end">₹${data.high[i].toFixed(2)}</td>
+                <td class="text-end">₹${data.low[i].toFixed(2)}</td>
+                <td class="text-end">₹${data.close[i].toFixed(2)}</td>
+                <td class="text-end">${data.volume[i].toLocaleString()}</td>
+                <td class="text-center"><span class="${changeClass}">${changeSymbol}${change}%</span></td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    }
+}
+
+// Draw the chart
+function drawChart() {
+    const type = document.getElementById("chartType").value;
+
+    let traces = [];
+    let layout = {
+        title: {
+            text: "{{ symbol }} - Stock Price Chart",
+            font: { color: '#FFFFFF', size: 18 }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        xaxis: { 
+            title: { text: "Date", font: { color: '#FFFFFF' } },
+            gridcolor: '#6C7293',
+            tickfont: { color: '#FFFFFF' }
+        },
+        yaxis: { 
+            title: { text: "Price (₹)", font: { color: '#FFFFFF' } },
+            gridcolor: '#6C7293',
+            tickfont: { color: '#FFFFFF' }
+        },
+        font: { color: '#FFFFFF' },
+        showlegend: true,
+        legend: { font: { color: '#FFFFFF' } }
+    };
+
+    // LINE CHART
+    if (type === "line") {
+        traces = [{
+            x: data.dates,
+            y: data.close,
+            type: "scatter",
+            mode: "lines",
+            line: { 
+                width: 3,
+                color: '#EB1616'
+            },
+            name: "Close Price"
+        }];
+    }
+
+    // AREA CHART
+    if (type === "area") {
+        traces = [{
+            x: data.dates,
+            y: data.close,
+            type: "scatter",
+            mode: "lines",
+            fill: 'tozeroy',
+            fillcolor: 'rgba(235, 22, 22, 0.2)',
+            line: { 
+                width: 2,
+                color: '#EB1616'
+            },
+            name: "Close Price"
+        }];
+    }
+
+    // CANDLE CHART
+    if (type === "candle") {
+        traces = [{
+            x: data.dates,
+            open: data.open,
+            high: data.high,
+            low: data.low,
+            close: data.close,
+            type: "candlestick",
+            increasing: { line: { color: '#00FF00' } },
+            decreasing: { line: { color: '#FF0000' } },
+            name: "Price"
+        }];
+    }
+
+    // OHLC BARS
+    if (type === "ohlc") {
+        traces = [{
+            x: data.dates,
+            open: data.open,
+            high: data.high,
+            low: data.low,
+            close: data.close,
+            type: "ohlc",
+            increasing: { line: { color: '#00FF00' } },
+            decreasing: { line: { color: '#FF0000' } },
+            name: "Price"
+        }];
+    }
+
+    // CANDLE + VOLUME
+    if (type === "candle_vol") {
+        traces = [
+            {
+                x: data.dates,
+                open: data.open,
+                high: data.high,
+                low: data.low,
+                close: data.close,
+                type: "candlestick",
+                increasing: { line: { color: '#00FF00' } },
+                decreasing: { line: { color: '#FF0000' } },
+                name: "Price",
+                xaxis: 'x',
+                yaxis: 'y'
+            },
+            {
+                x: data.dates,
+                y: data.volume,
+                type: "bar",
+                opacity: 0.4,
+                marker: { color: '#6C7293' },
+                name: "Volume",
+                xaxis: 'x',
+                yaxis: 'y2'
+            }
+        ];
+
+        layout.yaxis2 = {
+            title: { text: "Volume", font: { color: '#FFFFFF' } },
+            overlaying: "y",
+            side: "right",
+            showgrid: false,
+            tickfont: { color: '#FFFFFF' }
+        };
+    }
+
+    Plotly.newPlot("chart", traces, layout, { responsive: true });
+}
+
+// Add technical indicators
+function addIndicator() {
+    const indicator = document.getElementById("indicators").value;
+    
+    // For now, we'll just show a message. In a real app, you would calculate and add the indicator
+    if (indicator !== "none") {
+        alert(`Note: ${indicator} indicator would be calculated and displayed here.\nIn a production app, you would implement the calculations.`);
+    }
+    
+    drawChart();
+}
+
+// Update period (would need backend support)
+function updatePeriod(period) {
+    // Update active button
+    document.querySelectorAll('.btn-group button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // In a real app, this would fetch new data from the server
+    // For now, just show a message
+    console.log(`Would fetch data for period: ${period}`);
+    // You could implement AJAX call here to fetch new data
+}
+
+// Show more data
+function showMoreData() {
+    // In a real app, this would load more historical data
+    alert("In a production app, this would load more historical data.");
+}
+
+// Download data as CSV
+function downloadData() {
+    let csv = [];
+    
+    // Add headers
+    csv.push(['Date', 'Open', 'High', 'Low', 'Close', 'Volume'].join(','));
+    
+    // Add data rows
+    for (let i = 0; i < data.dates.length; i++) {
+        csv.push([
+            data.dates[i],
+            data.open[i],
+            data.high[i],
+            data.low[i],
+            data.close[i],
+            data.volume[i]
+        ].join(','));
+    }
+    
+    let csvContent = "data:text/csv;charset=utf-8," + csv.join('\n');
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "{{ symbol }}_stock_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    calculateStatistics();
+    drawChart();
+    
+    // Add some sample indicators for demonstration
+    setTimeout(() => {
+        console.log("Chart loaded successfully!");
+    }, 1000);
+});
+
+// Auto-resize chart on window resize
+window.addEventListener('resize', function() {
+    Plotly.Plots.resize(document.getElementById('chart'));
+});
+</script>
+
+<style>
+/* Custom chart styles */
+.js-plotly-plot .plotly .modebar {
+    background: rgba(0,0,0,0.5) !important;
+}
+.js-plotly-plot .plotly .modebar-btn path {
+    fill: #FFFFFF !important;
+}
+.btn-group .btn.active {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+</style>
+
+{% endblock %}
