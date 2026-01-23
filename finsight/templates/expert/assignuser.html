@@ -1,0 +1,78 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+      <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">name</th>
+                                            <th scope="col">place</th>
+                                            <th scope="col">email</th>
+                                            <th scope="col">age</th>
+                                            <th scope="col">photo</th>
+                                            <th scope="col">phone num</th>
+                                            <th scope="col">nationality</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for i in assign_user %}
+
+                                          <tr>
+                                          <td>
+                                              {{ i.Invester.name }}
+                                          </td>
+                                          <td>
+                                              {{ i.Invester.place }}
+                                          </td>
+                                          <td>
+                                              {{ i.Invester.email }}
+                                          </td>
+                                          <td>
+                                              {{ i.Invester.age }}
+                                          </td>
+{#                                          <td>#}
+{#                                              {{ i.status }}#}
+{#                                          </td>#}
+                                          <td>
+                                              <img src="/media/{{ i.photo }}" alt="null" height="100" width="100">
+                                          </td>
+                                          <td>
+                                              {{ i.Invester.phone }}
+                                          </td>
+                                              <td>
+                                              {{ i.Invester.nationaliy }}
+                                          </td>
+{#                                          <td>#}
+{#                                              {% if i.status != "accepted" %}#}
+{#                                                  <a href="/myapp/accept_expert/{{ i.id }}">Accept</a>#}
+{#                                                  {%else%}#}
+{#                                                  <div class="btn btn-success" disabled="">Accpted</div>#}
+{##}
+{#                                              {% endif %}#}
+{##}
+{#                                              <br>#}
+{#                                               {% if i.status != "rejected" %}#}
+{#                                                  <a href="/myapp/reject_expert/{{ i.id }}">Reject</a>#}
+{#                                                  {%else%}#}
+{#                                                  <div class="btn btn-success" disabled="">Rejected</div>#}
+{##}
+{#                                              {% endif %}#}
+{#                                          </td>#}
+                                        </tr>
+
+                                    {% endfor %}
+
+
+                                    </tbody>
+                                </table>
+      {% if messages %}
+          {% for i in messages %}
+             <div class="alert alert-success">{{ i }}</div>
+
+          {% endfor %}
+
+
+      {% endif %}
+                            </div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'admin/adminheader.html' %}
+    {% block title %}
+FINSIGHT - NOTIFICATION
+{% endblock title %}
+{% block content %}
+      <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Notification</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Discription</th>
+                                            <th scope="col">Action</th>
+                                           
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for i in viewnotification %}
+
+                                          <tr>
+                                          <td>
+                                              {{ i.title }}
+                                          </td>
+                                          <td>
+                                              {{ i.date }}
+                                          </td>
+                                          <td>
+                                              {{ i.description }}
+                                          </td>
+                                              <td>
+                                                  <a href="/myapp/delete_notification/{{ i.id }}" >Delete</a>
+                                              </td>
+
+{#                                          <td>#}
+{#                                              {% if i.status != "accepted" %}#}
+{#                                                  <a href="/myapp/accept_expert/{{ i.id }}">Accept</a>#}
+{#                                                  {%else%}#}
+{#                                                  <div class="btn btn-success" disabled="">Accpted</div>#}
+{##}
+{#                                              {% endif %}#}
+{##}
+{#                                              <br>#}
+{#                                               {% if i.status != "rejected" %}#}
+{#                                                  <a href="/myapp/reject_expert/{{ i.id }}">Reject</a>#}
+{#                                                  {%else%}#}
+{#                                                  <div class="btn btn-success" disabled="">Rejected</div>#}
+{##}
+{#                                              {% endif %}#}
+{#                                          </td>#}
+                                        </tr>
+
+                                    {% endfor %}
+
+
+                                    </tbody>
+                                </table>
+      {% if messages %}
+          {% for i in messages %}
+             <div class="alert alert-success">{{ i }}</div>
+
+          {% endfor %}
+
+
+      {% endif %}
+                            </div>
+{% endblock %}

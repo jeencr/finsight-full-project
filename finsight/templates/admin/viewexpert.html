@@ -1,0 +1,79 @@
+{% extends 'admin/adminheader.html' %}
+{% block title %}
+FINSIGHT - EXPERTS
+{% endblock title %}
+{% block content %}
+      <div class="table-hover">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">First Name</th>
+                                            <th scope="col">Specilization</th>
+                                            <th scope="col">Email</th>
+                                            <th scope="col">Experiance</th>
+                                            <th scope="col">status</th>
+                                            <th scope="col">photo</th>
+                                            <th scope="col">phone num</th>
+                                            <th scope="col">Accept/Reject</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for i in experts %}
+
+                                          <tr>
+                                          <td>
+                                              {{ i.name }}
+                                          </td>
+                                          <td>
+                                              {{ i.specilization }}
+                                          </td>
+                                          <td>
+                                              {{ i.email }}
+                                          </td>
+                                          <td>
+                                              {{ i.experiance }}
+                                          </td>
+                                          <td>
+                                              {{ i.status }}
+                                          </td>
+                                          <td>
+                                              <img src="/media/{{ i.photo }}" alt="null" height="100" width="100">
+                                          </td>
+                                          <td>
+                                              {{ i.phone }}
+                                          </td>
+                                          <td>
+                                              {% if i.status != "accepted" %}
+                                                  <a href="/myapp/accept_expert/{{ i.id }}">Accept</a>
+                                                  {%else%}
+                                                  <div class="btn btn-success" disabled="">Accpted</div>
+                                              
+                                              {% endif %}
+
+                                              <br>
+                                               {% if i.status != "rejected" %}
+                                                  <a href="/myapp/reject_expert/{{ i.id }}">Reject</a>
+                                                  {%else%}
+                                                  <div class="btn btn-success" disabled="">Rejected</div>
+
+                                              {% endif %}
+                                          </td>
+                                        </tr>
+
+                                    {% endfor %}
+
+
+                                    </tbody>
+                                </table>
+      {% if messages %}
+          {% for i in messages %}
+             <div class="alert alert-success">{{ i }}</div>
+
+          {% endfor %}
+
+
+      {% endif %}
+                            </div>
+{% endblock %}

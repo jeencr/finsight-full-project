@@ -1,0 +1,77 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+
+{#     <div class="col-sm-12 col-xl-6 "  >#}
+{##}
+{#                        <div class="bg-secondary rounded h-100 p-4">#}
+{# <div class="testimonial-item text-center">#}
+{##}
+{#                                    <h5 class="mb-1">{{  }}</h5>#}
+{#                                    <p class="mb-0">{{  }}</p>#}
+{#                                    <p class="mb-0">{{  }}</p>#}
+{#                                    <p class="mb-0">PH:{{ }}</p>#}
+{#                                    <p class="mb-0">EMAIL:{{  }}</p>#}
+{#                                </div>#}
+{#                        </div>#}
+{#     </div>#}
+    <BR><BR>
+
+<div class="d-flex justify-content-center">
+
+<div class="card w-75 " >
+<div class="bg-secondary rounded h-100 p-4 w-auto">
+                        <h6 class="mb-4" style="text-align:center">PROFILE</h6>
+                            <form>
+                                 <pre>                                                    <img class="img-fluid rounded-circle mx-auto mb-4 " src="/media/{{ viewprofile.photo }}" style="width: 250px; height: 250px;   "></pre>
+
+                                   <div style="text-align: center"><span style="font-size:50px ">{{  viewprofile.name }}</span></div>
+                           <div><div class="row g-0" style="padding-left: 100PX" ><div class="col"><i class="fa fa-graduation-cap fa-2x "></i></label><input type="email" class="form-control w-75 flex-row" id="inputEmail3" value="{{  viewprofile.experiance }}" disabled>
+                                        </div>
+
+                                        <div class="col"><i class="fa fa-briefcase fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.specilization }}" disabled>
+                                        </div></div>
+                                <br><br>
+                                                <div class="row g-0"   style="padding-left: 100PX">  <div class="col"><i class="fa fa-phone fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.phone }}" disabled>
+                                        </div>
+                               <div class="col"><i class="fa fa-envelope fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.email }}" disabled>
+                                      </div>
+                                                </div>
+                               <div style="text-align: right">
+                               <a href="/myapp/editprofile/"><button class="btn-primary rounded-3" >Edit Profile</button></a></div>
+                                </div>
+{#                                <fieldset class="row mb-3">#}
+{#                                    <legend class="col-form-label col-sm-2 pt-0">Radios</legend>#}
+{#                                    <div class="col-sm-10">#}
+{#                                        <div class="form-check">#}
+{#                                            <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="option1" checked="">#}
+{#                                            <label class="form-check-label" for="gridRadios1">#}
+{#                                                First radio#}
+{#                                            </label>#}
+{#                                        </div>#}
+{#                                        <div class="form-check">#}
+{#                                            <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" value="option2">#}
+{#                                            <label class="form-check-label" for="gridRadios2">#}
+{#                                                Second radio#}
+{#                                            </label>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </fieldset>#}
+{#                                <div class="row mb-3">#}
+{#                                    <legend class="col-form-label col-sm-2 pt-0">Checkbox</legend>#}
+{#                                    <div class="col-sm-10">#}
+{#                                        <div class="form-check">#}
+{#                                            <input class="form-check-input" type="checkbox" id="gridCheck1">#}
+{#                                            <label class="form-check-label" for="gridCheck1">#}
+{#                                                Check me out#}
+{#                                            </label>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <button type="submit" class="btn btn-primary">Sign in</button>#}
+                            </form>
+{#                        </div>#}
+               </div>
+    </div>
+
+
+{% endblock content %}
