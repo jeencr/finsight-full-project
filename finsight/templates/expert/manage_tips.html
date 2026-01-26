@@ -1,0 +1,221 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <!-- Add New Tip Form -->
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-secondary rounded p-4">
+                <h6 class="mb-4">Add New Investment Tip</h6>
+                <form method="POST" >
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="company" class="form-label">Company Name *</label>
+                            <input type="text" class="form-control" id="company" name="company" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sector" class="form-label">Sector *</label>
+                            <input type="text" class="form-control" id="sector" name="sector" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tips" class="form-label">Tip Type *</label>
+                            <select class="form-control" id="tips" name="tips" required>
+                                <option value="">Select Tip Type</option>
+                                <option value="Buy">Buy</option>
+                                <option value="Sell">Sell</option>
+                                <option value="Hold">Hold</option>
+                                <option value="Strong Buy">Strong Buy</option>
+                                <option value="Strong Sell">Strong Sell</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="recommendation" class="form-label">Recommendation *</label>
+                            <select class="form-control" id="recommendation" name="recommendation" required>
+                                <option value="">Select Recommendation</option>
+                                <option value="High Risk">High Risk</option>
+                                <option value="Medium Risk">Medium Risk</option>
+                                <option value="Low Risk">Low Risk</option>
+                                <option value="Safe Investment">Safe Investment</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description / Analysis *</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required placeholder="Provide detailed analysis and reasoning for this tip..."></textarea>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-plus me-2"></i>Add Tip
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tips List -->
+        <div class="col-sm-12 col-xl-6">
+            <div class="bg-secondary rounded p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0">My Investment Tips</h6>
+                    <span class="badge bg-primary">{{ tips.count }} tips</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Sector</th>
+                                <th scope="col">Tip</th>
+                                <th scope="col">Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tip in tips %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>
+                                    <strong>{{ tip.company }}</strong>
+                                    <small class="d-block text-muted">{{ tip.description|truncatechars:30 }}</small>
+                                </td>
+                                <td>{{ tip.sector }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if tip.tips == 'Buy' or tip.tips == 'Strong Buy' %}bg-success
+                                        {% elif tip.tips == 'Sell' or tip.tips == 'Strong Sell' %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                                        {{ tip.tips }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if tip.recommendation == 'High Risk' %}bg-danger
+                                        {% elif tip.recommendation == 'Medium Risk' %}bg-warning
+                                        {% elif tip.recommendation == 'Low Risk' %}bg-primary
+                                        {% else %}bg-success{% endif %}">
+                                        {{ tip.recommendation }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fa fa-info-circle me-2"></i> No investment tips added yet.
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Tips Summary -->
+                {% if tips.count > 0 %}
+                <div class="mt-4">
+                    <h6 class="mb-3">Tips Summary</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="bg-dark rounded p-3 text-center">
+                                <h5 class="text-primary mb-0">
+                                    {{ total_tips }}
+                                </h5>
+                                <small class="text-muted">Total Tips</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-dark rounded p-3 text-center">
+                                <h5 class="text-success mb-0">
+                                    {{ buy_tips }}
+                                </h5>
+                                <small class="text-muted">Buy Signals</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-dark rounded p-3 text-center">
+                                <h5 class="text-danger mb-0">
+                                    {{ sell_tips }}
+                                </h5>
+                                <small class="text-muted">Sell Signals</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="bg-dark rounded p-3 text-center">
+                                <h5 class="text-warning mb-0">
+                                    {{ hold_tips }}
+                                </h5>
+                                <small class="text-muted">Hold Signals</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table {
+        color: #6C7293;
+    }
+
+    .table th {
+        color: #fff;
+        background-color: #191C24;
+        border-color: #6C7293;
+    }
+
+    .table td {
+        border-color: #6C7293;
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        color: #fff;
+        background-color: rgba(235, 22, 22, 0.1);
+    }
+
+    .form-control, .form-select {
+        background-color: #191C24;
+        border-color: #6C7293;
+        color: #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #191C24;
+        border-color: #EB1616;
+        color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(235, 22, 22, 0.25);
+    }
+
+    .alert {
+        background-color: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.3);
+        color: #0dcaf0;
+    }
+
+    .badge.bg-success {
+        background-color: #198754 !important;
+    }
+
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .badge.bg-warning {
+        background-color: #ffc107 !important;
+        color: #000;
+    }
+
+    .badge.bg-primary {
+        background-color: #0d6efd !important;
+    }
+</style>
+{% endblock content %}

@@ -1,0 +1,411 @@
+{% extends 'expert/expertheader.html' %}
+{% block title %}
+FINSIGHT - COMPANY ANALYSIS
+{% endblock title %}
+{% block content %}
+    {% load custom_filters %}
+
+<style>
+/* Fix for modal appearing behind sidebar */
+.modal {
+    z-index: 1050 !important;
+}
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+/* Ensure modals are visible over sidebar */
+.modal-dialog {
+    z-index: 1060 !important;
+}
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary rounded p-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h4 class="mb-0 text-white">{{ sector }} – Company Analysis</h4>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-3">{{ data|length }} Companies</span>
+                <button class="btn btn-sm btn-light" onclick="exportToCSV()">
+                    <i class="fa fa-download me-2"></i>Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-white">Sector</label>
+                        <select name="sector" class="form-select bg-secondary text-white" required>
+                            <option value="NIFTY AUTO" {% if sector == "NIFTY AUTO" %}selected{% endif %}>NIFTY AUTO</option>
+                            <option value="NIFTY FMCG" {% if sector == "NIFTY FMCG" %}selected{% endif %}>NIFTY FMCG</option>
+                            <option value="NIFTY IT" {% if sector == "NIFTY IT" %}selected{% endif %}>NIFTY IT</option>
+                            <option value="NIFTY BANK" {% if sector == "NIFTY BANK" %}selected{% endif %}>NIFTY BANK</option>
+                            <option value="NIFTY PHARMA" {% if sector == "NIFTY PHARMA" %}selected{% endif %}>NIFTY PHARMA</option>
+                            <option value="NIFTY FIN SERVICE" {% if sector == "NIFTY FIN SERVICE" %}selected{% endif %}>NIFTY FIN SERVICE</option>
+                            <option value="NIFTY ENERGY" {% if sector == "NIFTY ENERGY" %}selected{% endif %}>NIFTY ENERGY</option>
+                            <option value="NIFTY METAL" {% if sector == "NIFTY METAL" %}selected{% endif %}>NIFTY METAL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-white">Recommendation Filter</label>
+                        <select name="rec" class="form-select bg-secondary text-white">
+                            <option value="">All Recommendations</option>
+                            <option value="Strong Buy" {% if request.GET.rec == "Strong Buy" %}selected{% endif %}>Strong Buy</option>
+                            <option value="Buy" {% if request.GET.rec == "Buy" %}selected{% endif %}>Buy</option>
+                            <option value="Hold" {% if request.GET.rec == "Hold" %}selected{% endif %}>Hold</option>
+                            <option value="Avoid" {% if request.GET.rec == "Avoid" %}selected{% endif %}>Avoid</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-search me-2"></i>Analyze Sector
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Strong Buy</h6>
+                        <h4 class="mb-0 text-success">
+                            {{ data|filter_by_recommendation:"Strong Buy"|length }}
+                        </h4>
+                    </div>
+                    <i class="fa fa-rocket fa-3x text-success"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Buy</h6>
+                        <h4 class="mb-0 text-primary">
+                            {{ data|filter_by_recommendation:"Buy"|length }}
+                        </h4>
+                    </div>
+                    <i class="fa fa-thumbs-up fa-3x text-primary"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Hold</h6>
+                        <h4 class="mb-0 text-warning">
+                            {{ data|filter_by_recommendation:"Hold"|length }}
+                        </h4>
+                    </div>
+                    <i class="fa fa-pause fa-3x text-warning"></i>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div>
+                        <h6 class="mb-2 text-white">Avoid</h6>
+                        <h4 class="mb-0 text-danger">
+                            {{ data|filter_by_recommendation:"Avoid"|length }}
+                        </h4>
+                    </div>
+                    <i class="fa fa-exclamation-triangle fa-3x text-danger"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Analysis Table -->
+        <div class="table-responsive">
+            <table class="table table-hover table-dark align-middle mb-0">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th scope="col" class="text-center">#</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col" class="text-end">Price</th>
+                        <th scope="col" class="text-end">P/E</th>
+                        <th scope="col" class="text-end">PEG</th>
+                        <th scope="col" class="text-end">Debt/Assets</th>
+                        <th scope="col" class="text-center">Sentiment</th>
+                        <th scope="col" class="text-center">Score</th>
+                        <th scope="col" class="text-center">Recommendation</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in data %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="ms-3">
+                                    <h6 class="mb-0">
+                                        <a href="/myapp/show_graph_company_expert/{{ r.Symbol }}/" class="text-white">
+                                            {{ r.Symbol }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-light">
+                                        EPS: {{ r.EPS|default:"N/A" }} |
+                                        P/B: {{ r.PB|default:"N/A" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <h6 class="mb-0">₹{{ r.Price|floatformat:2|default:"N/A" }}</h6>
+                        </td>
+                        <td class="text-end">
+                            <span class="badge {% if r.PE < 20 %}bg-success{% elif r.PE < 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ r.PE|floatformat:2|default:"N/A" }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <span class="badge {% if r.PEG and r.PEG < 1 %}bg-success{% elif r.PEG and r.PEG < 2 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ r.PEG|floatformat:3|default:"N/A" }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <span class="badge {% if r.Debt_Assets and r.Debt_Assets < 0.5 %}bg-success{% elif r.Debt_Assets and r.Debt_Assets < 1 %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ r.Debt_Assets|floatformat:3|default:"N/A" }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if r.Avg_Sentiment > 0.1 %}
+                            <span class="badge bg-success">{{ r.Avg_Sentiment|floatformat:3 }}</span>
+                            {% elif r.Avg_Sentiment > -0.1 %}
+                            <span class="badge bg-warning">{{ r.Avg_Sentiment|floatformat:3 }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ r.Avg_Sentiment|floatformat:3 }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="progress" style="height: 20px; width: 80px; margin: 0 auto;">
+                                <div class="progress-bar
+                                    {% if r.Score >= 80 %}bg-success
+                                    {% elif r.Score >= 60 %}bg-primary
+                                    {% elif r.Score >= 40 %}bg-warning
+                                    {% else %}bg-danger{% endif %}"
+                                    role="progressbar"
+                                    style="width: {{ r.Score }}%"
+                                    aria-valuenow="{{ r.Score }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    {{ r.Score }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge
+                                {% if r.Recommendation == 'Strong Buy' %}bg-success
+                                {% elif r.Recommendation == 'Buy' %}bg-primary
+                                {% elif r.Recommendation == 'Hold' %}bg-warning
+                                {% else %}bg-danger{% endif %}
+                                p-2">
+                                {{ r.Recommendation }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailsModal{{ forloop.counter }}">
+                                    <i class="fa fa-chart-line"></i> Details
+                                </button>
+                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#newsModal{{ forloop.counter }}">
+                                    <i class="fa fa-newspaper"></i> News
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <div class="alert alert-info mb-0">
+                                <i class="fa fa-info-circle me-2"></i> No companies found for the selected criteria.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modals (placed outside the main content) -->
+        {% for r in data %}
+        <!-- Details Modal -->
+        <div class="modal fade" id="detailsModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ forloop.counter }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-white" id="detailsModalLabel{{ forloop.counter }}">{{ r.Symbol }} - Detailed Analysis</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">Fundamentals</h6>
+                                <table class="table table-sm table-dark">
+                                    <tr>
+                                        <td class="text-light">Revenue TTM:</td>
+                                        <td class="text-end">₹{{ r.Revenue_TTM|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">Net Income:</td>
+                                        <td class="text-end">₹{{ r.Net_Income|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">Free Cash Flow:</td>
+                                        <td class="text-end">₹{{ r.Free_Cash_Flow|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">P/S Ratio:</td>
+                                        <td class="text-end">{{ r.PS|floatformat:2|default:"N/A" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3">Growth Metrics</h6>
+                                <table class="table table-sm table-dark">
+                                    <tr>
+                                        <td class="text-light">EPS 5yr CAGR:</td>
+                                        <td class="text-end">{{ r.EPS_5yr_CAGR|floatformat:3|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">Revenue 5yr CAGR:</td>
+                                        <td class="text-end">{{ r.Revenue_5yr_CAGR|floatformat:3|default:"N/A" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">Current Score:</td>
+                                        <td class="text-end"><strong>{{ r.Score }}/100</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-light">Analysis Date:</td>
+                                        <td class="text-end">{% now "Y-m-d" %}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <a href="/myapp/show_graph_company_expert/{{ r.Symbol }}/" class="btn btn-primary">View Charts</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Modal -->
+        <div class="modal fade" id="newsModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="newsModalLabel{{ forloop.counter }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-white" id="newsModalLabel{{ forloop.counter }}">{{ r.Symbol }} - Recent News</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if r.News %}
+                        <div class="list-group">
+                            {% for n in r.News %}
+                            <a href="{{ n.url }}" target="_blank" class="list-group-item list-group-item-action bg-secondary text-white mb-2">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ n.title|truncatechars:80 }}</h6>
+                                    <small>
+                                        <span class="badge
+                                            {% if n.sentiment > 0.1 %}bg-success
+                                            {% elif n.sentiment > -0.1 %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ n.sentiment|floatformat:3 }}
+                                        </span>
+                                    </small>
+                                </div>
+                                <small>Click to read full article</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle me-2"></i> No recent news found for this company.
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Legend -->
+        <div class="mt-4 p-3 bg-dark rounded">
+            <h6 class="text-white mb-3">Scoring Legend:</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle me-2" style="width: 15px; height: 15px;"></div>
+                        <small class="text-white">Strong Buy (80-100)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle me-2" style="width: 15px; height: 15px;"></div>
+                        <small class="text-white">Buy (60-79)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning rounded-circle me-2" style="width: 15px; height: 15px;"></div>
+                        <small class="text-white">Hold (40-59)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger rounded-circle me-2" style="width: 15px; height: 15px;"></div>
+                        <small class="text-white">Avoid (0-39)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportToCSV() {
+    let csv = [];
+    let headers = [];
+
+    // Add headers
+    document.querySelectorAll('thead th').forEach(th => {
+        if(th.innerText.trim() !== 'Actions') {
+            headers.push(th.innerText.trim());
+        }
+    });
+    csv.push(headers.join(','));
+
+    // Add data rows
+    document.querySelectorAll('tbody tr').forEach(row => {
+        if(row.querySelector('.alert')) return; // Skip empty row
+
+        let rowData = [];
+        row.querySelectorAll('td').forEach((td, index) => {
+            if(index < 9) { // Exclude actions column
+                let text = td.innerText.trim();
+                // Remove extra whitespace and newlines
+                text = text.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+                rowData.push(`"${text}"`);
+            }
+        });
+        csv.push(rowData.join(','));
+    });
+
+    let csvContent = "data:text/csv;charset=utf-8," + csv.join('\n');
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "company_analysis_{{ sector }}_{% now "Y-m-d" %}.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+
+{% endblock %}

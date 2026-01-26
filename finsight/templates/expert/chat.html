@@ -1,0 +1,203 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row">
+        <!-- Chat Main Area -->
+        <div class="col-md-12">
+            <div class="bg-secondary rounded p-4 h-100">
+                <!-- Chat Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center">
+                        <img class="rounded-circle me-3"
+                             src="/static/adminhome/img/user.jpg"
+                             style="width: 50px; height: 50px;">
+                        <div>
+                            <h5 class="mb-0 text-white">Chat with User</h5>
+                            <small class="text-success">
+                                <i class="fa fa-circle me-1"></i>Online
+                            </small>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/myapp/assignuser/" class="btn btn-sm btn-outline-primary">
+                            <i class="fa fa-arrow-left me-2"></i>Back to Users
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Container -->
+                <div class="chat-container bg-dark rounded p-3 mb-4"
+                     style="height: 400px; overflow-y: auto;">
+
+                    {% if messages %}
+                        {% for chat in messages %}
+                            <!-- Incoming Messages (From User to Expert) -->
+                            {% if chat.from_id.id == id %}
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <img class="rounded-circle"
+                                         src="/static/adminhome/img/user.jpg"
+                                         style="width: 40px; height: 40px;">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="bg-primary rounded p-3">
+                                        <p class="mb-1 text-white">{{ chat.message }}</p>
+                                        <small class="text-light">{{ chat.date|date:"M d, Y" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Outgoing Messages (From Expert to User) -->
+                            {% if chat.from_id.id == request.user.id %}
+                            <div class="d-flex mb-3 flex-row-reverse">
+                                <div class="flex-shrink-0">
+                                    <img class="rounded-circle"
+                                         src="/static/adminhome/img/user.jpg"
+                                         style="width: 40px; height: 40px;">
+                                </div>
+                                <div class="flex-grow-1 me-3">
+                                    <div class="bg-success rounded p-3">
+                                        <p class="mb-1 text-white">{{ chat.message }}</p>
+                                        <small class="text-light">{{ chat.date|date:"M d, Y" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="fa fa-comments fa-3x text-muted mb-3"></i>
+                            <h5 class="text-white">No Messages Yet</h5>
+                            <p class="text-muted">Start a conversation with this user</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Chat Input Form -->
+                <div class="chat-input">
+                    <form method="POST" action="/myapp/chatwithuser_post/{{ id }}/">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control bg-dark text-white border-0"
+                                   name="message"
+                                   placeholder="Type your message here..."
+                                   required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Quick Actions -->
+                    <div class="d-flex justify-content-between mt-3">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fa fa-paperclip"></i> Attach
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fa fa-image"></i> Image
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary">
+                                <i class="fa fa-file"></i> Document
+                            </button>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-info">
+                                <i class="fa fa-phone"></i> Call
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Info -->
+                <div class="mt-4 pt-3 border-top border-dark">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-white mb-3">
+                                <i class="fa fa-info-circle me-2"></i>Chat Information
+                            </h6>
+                            <ul class="list-unstyled text-muted">
+                                <li class="mb-2">
+                                    <i class="fa fa-user me-2"></i>Chatting with: User Name
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-calendar me-2"></i>Connected since: Today
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fa fa-envelope me-2"></i>Email: user@example.com
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-white mb-3">
+                                <i class="fa fa-shield-alt me-2"></i>Security
+                            </h6>
+                            <div class="alert alert-success bg-dark border-success">
+                                <i class="fa fa-lock me-2"></i>
+                                <small>Messages are encrypted end-to-end</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-warning w-100">
+                                <i class="fa fa-trash me-2"></i>Clear Chat History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        scroll-behavior: smooth;
+    }
+
+    .chat-container::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .chat-container::-webkit-scrollbar-track {
+        background: #191C24;
+    }
+
+    .chat-container::-webkit-scrollbar-thumb {
+        background: #EB1616;
+        border-radius: 10px;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(235, 22, 22, 0.25);
+        border-color: #EB1616;
+    }
+
+    .alert-success {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+        border-color: rgba(25, 135, 84, 0.3) !important;
+        color: #198754 !important;
+    }
+</style>
+
+<!-- Auto-scroll to bottom of chat -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Focus on message input
+        const messageInput = document.querySelector('input[name="message"]');
+        if (messageInput) {
+            messageInput.focus();
+        }
+
+        // Auto-refresh messages every 5 seconds
+        setInterval(function() {
+            location.reload();
+        }, 5000);
+    });
+</script>
+{% endblock %}

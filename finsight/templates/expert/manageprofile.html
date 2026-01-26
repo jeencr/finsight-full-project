@@ -1,77 +1,261 @@
 {% extends 'expert/expertheader.html' %}
 {% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <!-- Left Column: Profile Info -->
+        <div class="col-sm-12 col-xl-4">
+            <div class="bg-secondary rounded p-4 mb-4">
+                <!-- Profile Header -->
+                <div class="text-center mb-4">
+                    <div class="profile-image mx-auto mb-3">
+                        <img class="img-fluid rounded-circle border border-4 border-primary"
+                             src="/media/{{ viewprofile.photo }}"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+                    <h3 class="text-white mb-1">{{ viewprofile.name }}</h3>
+                    <span class="badge bg-success">{{ viewprofile.status }}</span>
+                    <p class="text-muted mt-2">{{ viewprofile.specilization }}</p>
+                </div>
 
-{#     <div class="col-sm-12 col-xl-6 "  >#}
-{##}
-{#                        <div class="bg-secondary rounded h-100 p-4">#}
-{# <div class="testimonial-item text-center">#}
-{##}
-{#                                    <h5 class="mb-1">{{  }}</h5>#}
-{#                                    <p class="mb-0">{{  }}</p>#}
-{#                                    <p class="mb-0">{{  }}</p>#}
-{#                                    <p class="mb-0">PH:{{ }}</p>#}
-{#                                    <p class="mb-0">EMAIL:{{  }}</p>#}
-{#                                </div>#}
-{#                        </div>#}
-{#     </div>#}
-    <BR><BR>
+                <!-- Profile Details -->
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-dark rounded mb-2">
+                            <div class="me-3">
+                                <i class="fa fa-graduation-cap fa-xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white">Experience</h6>
+                                <p class="mb-0 text-muted">{{ viewprofile.experiance }} Years</p>
+                            </div>
+                        </div>
+                    </div>
 
-<div class="d-flex justify-content-center">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-dark rounded mb-2">
+                            <div class="me-3">
+                                <i class="fa fa-phone fa-xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white">Phone</h6>
+                                <p class="mb-0 text-muted">{{ viewprofile.phone }}</p>
+                            </div>
+                        </div>
+                    </div>
 
-<div class="card w-75 " >
-<div class="bg-secondary rounded h-100 p-4 w-auto">
-                        <h6 class="mb-4" style="text-align:center">PROFILE</h6>
-                            <form>
-                                 <pre>                                                    <img class="img-fluid rounded-circle mx-auto mb-4 " src="/media/{{ viewprofile.photo }}" style="width: 250px; height: 250px;   "></pre>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-dark rounded mb-2">
+                            <div class="me-3">
+                                <i class="fa fa-envelope fa-xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white">Email</h6>
+                                <p class="mb-0 text-muted">{{ viewprofile.email }}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                   <div style="text-align: center"><span style="font-size:50px ">{{  viewprofile.name }}</span></div>
-                           <div><div class="row g-0" style="padding-left: 100PX" ><div class="col"><i class="fa fa-graduation-cap fa-2x "></i></label><input type="email" class="form-control w-75 flex-row" id="inputEmail3" value="{{  viewprofile.experiance }}" disabled>
-                                        </div>
+                    {% if viewprofile.LOGIN.date_joined %}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-dark rounded">
+                            <div class="me-3">
+                                <i class="fa fa-calendar fa-xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white">Member Since</h6>
+                                <p class="mb-0 text-muted">{{ viewprofile.LOGIN.date_joined|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
 
-                                        <div class="col"><i class="fa fa-briefcase fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.specilization }}" disabled>
-                                        </div></div>
-                                <br><br>
-                                                <div class="row g-0"   style="padding-left: 100PX">  <div class="col"><i class="fa fa-phone fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.phone }}" disabled>
-                                        </div>
-                               <div class="col"><i class="fa fa-envelope fa-2x "></i></label><input type="email" class="form-control w-75" id="inputEmail3" value="{{  viewprofile.email }}" disabled>
-                                      </div>
-                                                </div>
-                               <div style="text-align: right">
-                               <a href="/myapp/editprofile/"><button class="btn-primary rounded-3" >Edit Profile</button></a></div>
-                                </div>
-{#                                <fieldset class="row mb-3">#}
-{#                                    <legend class="col-form-label col-sm-2 pt-0">Radios</legend>#}
-{#                                    <div class="col-sm-10">#}
-{#                                        <div class="form-check">#}
-{#                                            <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="option1" checked="">#}
-{#                                            <label class="form-check-label" for="gridRadios1">#}
-{#                                                First radio#}
-{#                                            </label>#}
-{#                                        </div>#}
-{#                                        <div class="form-check">#}
-{#                                            <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios2" value="option2">#}
-{#                                            <label class="form-check-label" for="gridRadios2">#}
-{#                                                Second radio#}
-{#                                            </label>#}
-{#                                        </div>#}
-{#                                    </div>#}
-{#                                </fieldset>#}
-{#                                <div class="row mb-3">#}
-{#                                    <legend class="col-form-label col-sm-2 pt-0">Checkbox</legend>#}
-{#                                    <div class="col-sm-10">#}
-{#                                        <div class="form-check">#}
-{#                                            <input class="form-check-input" type="checkbox" id="gridCheck1">#}
-{#                                            <label class="form-check-label" for="gridCheck1">#}
-{#                                                Check me out#}
-{#                                            </label>#}
-{#                                        </div>#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                                <button type="submit" class="btn btn-primary">Sign in</button>#}
-                            </form>
-{#                        </div>#}
-               </div>
+                <!-- Edit Button -->
+                <div class="text-center mt-4">
+                    <a href="/myapp/editprofile/" class="btn btn-primary w-100">
+                        <i class="fa fa-edit me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Stats and Lists -->
+        <div class="col-sm-12 col-xl-8">
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <!-- Total Assigned Users -->
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                        <div class="ms-3">
+                            <p class="mb-2 text-white">Assigned Users</p>
+                            <h6 class="mb-0 text-primary">{{ assignuser.count }}</h6>
+                        </div>
+                        <div class="bg-dark rounded-circle p-3">
+                            <i class="fa fa-users fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                        <div class="ms-3">
+                            <p class="mb-2 text-white">Pending Requests</p>
+                            <h6 class="mb-0 text-warning">{{ reqs.count }}</h6>
+                        </div>
+                        <div class="bg-dark rounded-circle p-3">
+                            <i class="fa fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Requests -->
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                        <div class="ms-3">
+                            <p class="mb-2 text-white">Active Clients</p>
+                            <h6 class="mb-0 text-success">
+                                {% with active_count=assignuser.count %}
+                                    {{ active_count }}
+                                {% endwith %}
+                            </h6>
+                        </div>
+                        <div class="bg-dark rounded-circle p-3">
+                            <i class="fa fa-user-check fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Satisfaction Rate -->
+                <div class="col-sm-6 col-xl-3">
+                    <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
+                        <div class="ms-3">
+                            <p class="mb-2 text-white">Satisfaction</p>
+                            <h6 class="mb-0 text-info">100%</h6>
+                        </div>
+                        <div class="bg-dark rounded-circle p-3">
+                            <i class="fa fa-chart-line fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assigned Users List -->
+            <div class="bg-secondary rounded p-4 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0">My Assigned Users</h6>
+                    <span class="badge bg-primary">{{ assignuser.count }} users</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">User Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in assignuser %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ user.Investers.name }}</td>
+                                <td>{{ user.Investers.email }}</td>
+                                <td>{{ user.Investers.phone }}</td>
+                                <td>
+                                    <span class="badge bg-success">Active</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fa fa-info-circle me-2"></i> No users assigned yet.
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pending Requests List -->
+            <div class="bg-secondary rounded p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0">Pending User Requests</h6>
+                    <span class="badge bg-warning">{{ reqs.count }} pending</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">User Name</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Income</th>
+                                <th scope="col">Occupation</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in reqs %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ req.Investers.name }}</td>
+                                <td>${{ req.amount }}</td>
+                                <td>${{ req.income }}</td>
+                                <td>{{ req.occupation }}</td>
+                                <td>
+                                    <span class="badge bg-warning">Pending</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fa fa-info-circle me-2"></i> No pending requests.
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
+<style>
+    .table {
+        color: #6C7293;
+    }
 
+    .table th {
+        color: #fff;
+        background-color: #191C24;
+        border-color: #6C7293;
+    }
+
+    .table td {
+        border-color: #6C7293;
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        color: #fff;
+        background-color: rgba(235, 22, 22, 0.1);
+    }
+
+    .alert {
+        background-color: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.3);
+        color: #0dcaf0;
+    }
+</style>
 {% endblock content %}

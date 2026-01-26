@@ -19,7 +19,7 @@ class Investers (models.Model):
     LOGIN=models.OneToOneField(User,on_delete=models.CASCADE)
     name=models.CharField(max_length=50)
     place=models.CharField(max_length=100)
-    photo=models.ImageField(upload_to='expert_photo')
+    photo=models.ImageField(upload_to='invester_photo')
     age=models.CharField(max_length=5)
     phone=models.CharField(max_length=15)
     nationality=models.CharField(max_length=100)
@@ -45,6 +45,14 @@ class Complaints(models.Model):
     date = models.DateField()
 
 
+class UserPortfolio(models.Model):
+    Expert=models.ForeignKey(Expert, on_delete=models.CASCADE)
+    Investers=models.ForeignKey(Investers, on_delete=models.CASCADE)
+    company=models.CharField(max_length=100)
+    date = models.CharField(max_length=100)
+    price_per_stock_when_bought = models.CharField(max_length=100)
+    number_of_stocks = models.CharField(max_length=100)
+
 class Notification(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
@@ -53,6 +61,9 @@ class Notification(models.Model):
 
 class Tips(models.Model):
     Expert= models.ForeignKey(Expert, on_delete=models.CASCADE)
+    company = models.CharField(max_length=100)
+    sector = models.CharField(max_length=100)
+    recommendation = models.CharField(max_length=100)
     tips = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
 

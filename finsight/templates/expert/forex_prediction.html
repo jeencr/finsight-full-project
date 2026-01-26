@@ -1,0 +1,77 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live FVG + CHOCH Scanner</title>
+  <meta charset="utf-8">
+  <style>
+    body {font-family:Arial;background:#000;color:#0f0;margin:0;padding:20px;}
+    h1 {text-align:center;color:#0ff;margin:0 0 15px;}
+    .status {text-align:center;padding:12px;background:#003300;border-radius:8px;font-weight:bold;margin-bottom:20px;}
+    .alert {background:#001a00;border:2px solid #0f0;padding:20px;margin:15px 0;border-radius:12px;}
+    .bearish {border-color:#f00;background:#1a0000;}
+    .header {font-size:1.6em;font-weight:bold;color:#0ff;margin-bottom:10px;}
+    .price {font-size:1.4em;color:#ff0;font-weight:bold;}
+    .zone {background:#002200;padding:8px;border-radius:6px;margin:8px 0;font-size:0.95em;}
+    .bull {color:#0f0;}
+    .bear {color:#f88;}
+    img {max-width:100%;border-radius:10px;margin-top:15px;border:2px solid #0f0;box-shadow:0 0 10px #0f0;}
+    .noalert {text-align:center;color:#ff0;font-size:1.5em;padding:60px;background:#110000;border:2px dashed #440000;border-radius:15px;}
+  </style>
+</head>
+<body>
+  <h1>FVG + LTF FVG + CHOCH LIVE SCANNER</h1>
+  <div class="status">
+    Real-time • No files saved • Auto-refresh every 25s • <span id="clock"></span>
+  </div>
+<div style="margin-bottom: 20px; padding: 15px; background:#001100; border:1px solid #0f0; border-radius:10px;">
+  <h2 style="color:#0ff; margin:0 0 10px;">Live Prices</h2>
+  <ul style="list-style:none; padding:0; margin:0;">
+    {% for sym, p in prices.items %}
+      <li style="padding:6px 0; border-bottom:1px solid #003300;">
+        <strong style="color:#0ff;">{{ sym }}</strong>
+        <span style="color:#ff0; float:right;">{{ p }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+  <div id="alerts">
+    {% for a in alerts %}
+      {% if "bearish" in a.type|lower %}
+        <div class="alert bearish">
+      {% else %}
+        <div class="alert">
+      {% endif %}
+        <div class="header">{{ a.symbol }} → {{ a.type }}</div>
+        <div class="price">Current Price: {{ a.price }}</div>
+        <div>Broken Level: {{ a.level }}</div>
+        <div>Time: {{ a.time }} UTC</div>
+
+        <div class="zone bull">
+          <strong>HTF {{ a.htf_type }} FVG</strong><br>
+          {{ a.htf_low }} → {{ a.htf_high }}
+        </div>
+        <div class="zone bear">
+          <strong>LTF {{ a.ltf_type }} FVG</strong><br>
+          {{ a.ltf_low }} → {{ a.ltf_high }}
+        </div>
+
+        <img src="{{ a.chart }}" loading="lazy">
+      </div>
+    {% empty %}
+      <div class="noalert">
+        Scanning 5 pairs live...<br><br>
+        No confirmed FVG + CHOCH setups yet.<br>
+        Page refreshes every 25 seconds.
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    setInterval(() => document.getElementById("clock").textContent = new Date().toLocaleTimeString(), 1000);
+    setTimeout(() => location.reload(), 25000);
+  </script>
+</body>
+</html>
+{% endblock %}

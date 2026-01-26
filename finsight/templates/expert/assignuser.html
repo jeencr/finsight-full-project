@@ -1,78 +1,232 @@
 {% extends 'expert/expertheader.html' %}
 {% block content %}
-      <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">name</th>
-                                            <th scope="col">place</th>
-                                            <th scope="col">email</th>
-                                            <th scope="col">age</th>
-                                            <th scope="col">photo</th>
-                                            <th scope="col">phone num</th>
-                                            <th scope="col">nationality</th>
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h6 class="mb-0">My Assigned Users</h6>
+            <span class="badge bg-primary">{{ assign_user.count }} users</span>
+        </div>
 
+        {% if assign_user.count > 0 %}
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="bg-dark rounded d-flex align-items-center justify-content-between p-4">
+                    <div class="ms-3">
+                        <p class="mb-2 text-white">Total Users</p>
+                        <h6 class="mb-0 text-primary">{{ assign_user.count }}</h6>
+                    </div>
+                    <div class="bg-secondary rounded-circle p-3">
+                        <i class="fa fa-users fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for i in assign_user %}
-
-                                          <tr>
-                                          <td>
-                                              {{ i.Invester.name }}
-                                          </td>
-                                          <td>
-                                              {{ i.Invester.place }}
-                                          </td>
-                                          <td>
-                                              {{ i.Invester.email }}
-                                          </td>
-                                          <td>
-                                              {{ i.Invester.age }}
-                                          </td>
-{#                                          <td>#}
-{#                                              {{ i.status }}#}
-{#                                          </td>#}
-                                          <td>
-                                              <img src="/media/{{ i.photo }}" alt="null" height="100" width="100">
-                                          </td>
-                                          <td>
-                                              {{ i.Invester.phone }}
-                                          </td>
-                                              <td>
-                                              {{ i.Invester.nationaliy }}
-                                          </td>
-{#                                          <td>#}
-{#                                              {% if i.status != "accepted" %}#}
-{#                                                  <a href="/myapp/accept_expert/{{ i.id }}">Accept</a>#}
-{#                                                  {%else%}#}
-{#                                                  <div class="btn btn-success" disabled="">Accpted</div>#}
-{##}
-{#                                              {% endif %}#}
-{##}
-{#                                              <br>#}
-{#                                               {% if i.status != "rejected" %}#}
-{#                                                  <a href="/myapp/reject_expert/{{ i.id }}">Reject</a>#}
-{#                                                  {%else%}#}
-{#                                                  <div class="btn btn-success" disabled="">Rejected</div>#}
-{##}
-{#                                              {% endif %}#}
-{#                                          </td>#}
-                                        </tr>
-
-                                    {% endfor %}
-
-
-                                    </tbody>
-                                </table>
-      {% if messages %}
-          {% for i in messages %}
-             <div class="alert alert-success">{{ i }}</div>
-
-          {% endfor %}
-
-
-      {% endif %}
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Profile</th>
+                        <th scope="col">User Info</th>
+                        <th scope="col">Contact</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assign in assign_user %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img class="rounded-circle me-3"
+                                     src="/media/{{ assign.Investers.photo }}"
+                                     alt="{{ assign.Investers.name }}"
+                                     style="width: 60px; height: 60px; object-fit: cover;">
                             </div>
+                        </td>
+                        <td>
+                            <h6 class="text-white mb-1">{{ assign.Investers.name }}</h6>
+                            <small class="text-muted">Age: {{ assign.Investers.age }}</small><br>
+                            <small class="text-muted">{{ assign.Investers.nationality }}</small>
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <i class="fa fa-phone text-primary me-2"></i>
+                                <small>{{ assign.Investers.phone }}</small>
+                            </div>
+                            <div>
+                                <i class="fa fa-envelope text-primary me-2"></i>
+                                <small>{{ assign.Investers.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <i class="fa fa-map-marker-alt text-primary me-2"></i>
+                            <small>{{ assign.Investers.place }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#userDetailsModal{{ forloop.counter }}">
+                                    <i class="fa fa-eye me-1"></i> View
+                                </button>
+                                <a href="/myapp/chatwithuser/{{ assign.Investers.LOGIN_id }}"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="fa fa-comment me-1"></i> Chat
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="alert alert-info w-75 mx-auto">
+                <i class="fa fa-users fa-2x mb-3"></i>
+                <h5>No Users Assigned</h5>
+                <p class="mb-0">You don't have any assigned users yet.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- User Details Modals -->
+{% for assign in assign_user %}
+<div class="modal fade" id="userDetailsModal{{ forloop.counter }}" tabindex="-1"
+     aria-labelledby="userDetailsModalLabel{{ forloop.counter }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" id="userDetailsModalLabel{{ forloop.counter }}">
+                    <i class="fa fa-user me-2"></i>{{ assign.Investers.name }} - Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img class="img-fluid rounded-circle border border-3 border-primary mb-3"
+                             src="/media/{{ assign.Investers.photo }}"
+                             alt="{{ assign.Investers.name }}"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                        <h5 class="text-white">{{ assign.Investers.name }}</h5>
+                        <span class="badge bg-info">{{ assign.Investers.nationality }}</span>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="bg-secondary rounded p-3">
+                                    <small class="text-muted">Age</small>
+                                    <h6 class="mb-0 text-white">{{ assign.Investers.age }} years</h6>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-secondary rounded p-3">
+                                    <small class="text-muted">Location</small>
+                                    <h6 class="mb-0 text-white">{{ assign.Investers.place }}</h6>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="bg-secondary rounded p-3">
+                                    <small class="text-muted">Email Address</small>
+                                    <h6 class="mb-0 text-white">
+                                        <i class="fa fa-envelope text-primary me-2"></i>
+                                        {{ assign.Investers.email }}
+                                    </h6>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="bg-secondary rounded p-3">
+                                    <small class="text-muted">Phone Number</small>
+                                    <h6 class="mb-0 text-white">
+                                        <i class="fa fa-phone text-primary me-2"></i>
+                                        {{ assign.Investers.phone }}
+                                    </h6>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="bg-secondary rounded p-3">
+                                    <small class="text-muted">Assigned Expert</small>
+                                    <h6 class="mb-0 text-white">
+                                        <i class="fa fa-user-tie text-primary me-2"></i>
+                                        {{ assign.Expert.name }}
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="/myapp/chatwithuser/{{ assign.Investers.LOGIN_id }}"
+                   class="btn btn-primary">
+                    <i class="fa fa-comments me-2"></i>Chat with User
+                </a>
+                <a href="/myapp/viewrequestexpert/{{ assign.Investers.id }}"
+                   class="btn btn-info">
+                    <i class="fa fa-clipboard-list me-2"></i>View Requests
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .table {
+        color: #6C7293;
+    }
+
+    .table th {
+        color: #fff;
+        background-color: #191C24;
+        border-color: #6C7293;
+    }
+
+    .table td {
+        border-color: #6C7293;
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        color: #fff;
+        background-color: rgba(235, 22, 22, 0.1);
+    }
+
+    .modal-content {
+        border: 1px solid #6C7293;
+    }
+
+    .alert {
+        background-color: rgba(13, 202, 240, 0.1);
+        border-color: rgba(13, 202, 240, 0.3);
+        color: #0dcaf0;
+    }
+
+    .badge.bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    .badge.bg-info {
+        background-color: #0dcaf0 !important;
+        color: #000;
+    }
+
+    .btn-group .btn {
+        margin-right: 5px;
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+</style>
 {% endblock %}

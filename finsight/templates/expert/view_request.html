@@ -1,0 +1,128 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-secondary rounded p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0">User Investment Request Details</h6>
+                    <a href="/myapp/assignuser/" class="btn btn-sm btn-outline-primary">
+                        <i class="fa fa-arrow-left me-2"></i>Back to Users
+                    </a>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="mb-4">
+                    <span class="badge 
+                        {% if reqs.status == 'accepted' %}bg-success
+                        {% elif reqs.status == 'pending' %}bg-warning
+                        {% else %}bg-danger{% endif %} 
+                        fs-6 p-3">
+                        <i class="fa 
+                            {% if reqs.status == 'accepted' %}fa-check-circle
+                            {% elif reqs.status == 'pending' %}fa-clock
+                            {% else %}fa-times-circle{% endif %} 
+                            me-2"></i>
+                        Status: {{ reqs.status|title }}
+                    </span>
+                </div>
+
+                <!-- Request Details -->
+                <div class="row g-4">
+                    <!-- User Info -->
+                    <div class="col-md-6">
+                        <div class="card bg-dark h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fa fa-user me-2"></i>User Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <small class="text-muted">Name</small>
+                                    <p class="text-white fs-5">{{ reqs.Investers.name }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Email</small>
+                                    <p class="text-white">{{ reqs.Investers.email }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Phone</small>
+                                    <p class="text-white">{{ reqs.Investers.phone }}</p>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Location</small>
+                                    <p class="text-white">{{ reqs.Investers.place }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Info -->
+                    <div class="col-md-6">
+                        <div class="card bg-dark h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fa fa-chart-line me-2"></i>Financial Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <small class="text-muted">Investment Amount</small>
+                                    <p class="text-white fs-4">${{ reqs.amount }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Annual Income</small>
+                                    <p class="text-white fs-4">${{ reqs.income }}</p>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Occupation</small>
+                                    <p class="text-white fs-5">{{ reqs.occupation }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expert Notes Section -->
+                <div class="card bg-dark mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fa fa-edit me-2"></i>Expert Notes</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="#">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea class="form-control bg-secondary text-white" 
+                                          rows="4" 
+                                          placeholder="Add your notes about this user's investment request..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-save me-2"></i>Save Notes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row g-3 mt-4">
+                    <div class="col-md-4">
+                        <a href="/myapp/chatwithuser/{{ reqs.Investers.LOGIN_id }}" 
+                           class="btn btn-primary w-100">
+                            <i class="fa fa-comments me-2"></i>Chat with User
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/myapp/createportfolio/{{ reqs.Investers.id }}" class="btn btn-info w-100">
+                            <i class="fa fa-chart-pie me-2"></i>Create Portfolio
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="#" class="btn btn-success w-100">
+                            <i class="fa fa-file-pdf me-2"></i>Generate Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

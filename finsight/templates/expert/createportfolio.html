@@ -1,0 +1,99 @@
+{% extends 'expert/expertheader.html' %}
+{% block content %}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary rounded p-4">
+        <h4 class="mb-4">Create Investment Portfolio</h4>
+
+        <form method="post" action="/myapp/createportfolio_post/">
+            {% csrf_token %}
+
+            <!-- Hidden Investor ID -->
+            <input type="hidden" name="investor_id" value="{{ id }}">
+
+            <!-- COMPANY SELECT -->
+            <div class="mb-3">
+                <label class="form-label">Select Company</label>
+                <select name="company" id="companySelect"
+                        class="form-select bg-dark text-white" required
+                        onchange="updatePrice()">
+                    <option value="">-- Select Company --</option>
+                    {% for c in companies %}
+                        <option value="{{ c.name }}" data-price="{{ c.price }}">
+                            {{ c.name }} — ₹{{ c.price }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- CURRENT PRICE -->
+            <div class="mb-3">
+                <label class="form-label">Current Market Price (₹)</label>
+                <input type="text" id="currentPrice"
+                       class="form-control bg-dark text-white"
+                       readonly>
+            </div>
+
+            <!-- AMOUNT -->
+            <div class="mb-3">
+                <label class="form-label">Investment Amount (₹)</label>
+                <input type="number" name="amount" id="amountInput"
+                       class="form-control bg-dark text-white"
+                       placeholder="Enter amount"
+                       required oninput="calculateShares()">
+            </div>
+
+            <!-- ESTIMATED SHARES -->
+            <div class="mb-3">
+                <label class="form-label">Estimated Shares</label>
+                <input type="text" id="sharesOutput"
+                       class="form-control bg-dark text-white"
+                       readonly>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="mb-3">
+                <label class="form-label">Portfolio Description</label>
+                <textarea name="description"
+                          class="form-control bg-dark text-white"
+                          rows="4"
+                          placeholder="Enter investment strategy / notes"
+                          required></textarea>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary px-4">
+                    Create Portfolio
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- INTERNAL SCRIPT -->
+<script>
+function updatePrice() {
+    const select = document.getElementById("companySelect");
+    const price = select.options[select.selectedIndex].getAttribute("data-price");
+    document.getElementById("currentPrice").value = price ? "₹ " + price : "";
+    calculateShares();
+}
+
+function calculateShares() {
+    const price = document.getElementById("companySelect")
+                    .options[document.getElementById("companySelect").selectedIndex]
+                    ?.getAttribute("data-price");
+
+    const amount = document.getElementById("amountInput").value;
+
+    if (price && amount) {
+        const shares = (amount / price).toFixed(2);
+        document.getElementById("sharesOutput").value = shares;
+    } else {
+        document.getElementById("sharesOutput").value = "";
+    }
+}
+</script>
+
+{% endblock content %}
