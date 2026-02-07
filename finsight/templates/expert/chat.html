@@ -12,7 +12,7 @@
                              src="/static/adminhome/img/user.jpg"
                              style="width: 50px; height: 50px;">
                         <div>
-                            <h5 class="mb-0 text-white">Chat with User</h5>
+                            <h5 class="mb-0 text-white">Chat with {{ user_name }}</h5>
                             <small class="text-success">
                                 <i class="fa fa-circle me-1"></i>Online
                             </small>
@@ -27,65 +27,31 @@
 
                 <!-- Chat Messages Container -->
                 <div class="chat-container bg-dark rounded p-3 mb-4"
-                     style="height: 400px; overflow-y: auto;">
-
-                    {% if messages %}
-                        {% for chat in messages %}
-                            <!-- Incoming Messages (From User to Expert) -->
-                            {% if chat.from_id.id == id %}
-                            <div class="d-flex mb-3">
-                                <div class="flex-shrink-0">
-                                    <img class="rounded-circle"
-                                         src="/static/adminhome/img/user.jpg"
-                                         style="width: 40px; height: 40px;">
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <div class="bg-primary rounded p-3">
-                                        <p class="mb-1 text-white">{{ chat.message }}</p>
-                                        <small class="text-light">{{ chat.date|date:"M d, Y" }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Outgoing Messages (From Expert to User) -->
-                            {% if chat.from_id.id == request.user.id %}
-                            <div class="d-flex mb-3 flex-row-reverse">
-                                <div class="flex-shrink-0">
-                                    <img class="rounded-circle"
-                                         src="/static/adminhome/img/user.jpg"
-                                         style="width: 40px; height: 40px;">
-                                </div>
-                                <div class="flex-grow-1 me-3">
-                                    <div class="bg-success rounded p-3">
-                                        <p class="mb-1 text-white">{{ chat.message }}</p>
-                                        <small class="text-light">{{ chat.date|date:"M d, Y" }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        <!-- Empty State -->
-                        <div class="text-center py-5">
-                            <i class="fa fa-comments fa-3x text-muted mb-3"></i>
-                            <h5 class="text-white">No Messages Yet</h5>
-                            <p class="text-muted">Start a conversation with this user</p>
+                     style="height: 400px; overflow-y: auto;"
+                     id="chatMessagesContainer">
+                    <!-- Messages will be loaded here via AJAX -->
+                    <div class="text-center py-5" id="loadingIndicator">
+                        <i class="fa fa-comments fa-3x text-muted mb-3"></i>
+                        <h5 class="text-white">Loading messages...</h5>
+                        <div class="spinner-border text-primary mt-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
 
                 <!-- Chat Input Form -->
                 <div class="chat-input">
-                    <form method="POST" action="/myapp/chatwithuser_post/{{ id }}/">
+                    <form id="chatForm" method="POST">
                         {% csrf_token %}
                         <div class="input-group">
                             <input type="text"
                                    class="form-control bg-dark text-white border-0"
+                                   id="messageInput"
                                    name="message"
                                    placeholder="Type your message here..."
-                                   required>
-                            <button class="btn btn-primary" type="submit">
+                                   required
+                                   autocomplete="off">
+                            <button class="btn btn-primary" type="submit" id="sendButton">
                                 <i class="fa fa-paper-plane"></i> Send
                             </button>
                         </div>
@@ -105,8 +71,8 @@
                             </button>
                         </div>
                         <div>
-                            <button class="btn btn-sm btn-outline-info">
-                                <i class="fa fa-phone"></i> Call
+                            <button class="btn btn-sm btn-outline-info" id="refreshMessages">
+                                <i class="fa fa-sync me-2"></i>Refresh
                             </button>
                         </div>
                     </div>
@@ -121,13 +87,13 @@
                             </h6>
                             <ul class="list-unstyled text-muted">
                                 <li class="mb-2">
-                                    <i class="fa fa-user me-2"></i>Chatting with: User Name
+                                    <i class="fa fa-user me-2"></i>Chatting with: {{ user_name }}
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fa fa-calendar me-2"></i>Connected since: Today
+                                    <i class="fa fa-calendar me-2"></i>User ID: {{ id }}
                                 </li>
                                 <li class="mb-2">
-                                    <i class="fa fa-envelope me-2"></i>Email: user@example.com
+                                    <i class="fa fa-user-tie me-2"></i>Expert ID: {{ expert_id }}
                                 </li>
                             </ul>
                         </div>
@@ -139,7 +105,7 @@
                                 <i class="fa fa-lock me-2"></i>
                                 <small>Messages are encrypted end-to-end</small>
                             </div>
-                            <button class="btn btn-sm btn-outline-warning w-100">
+                            <button class="btn btn-sm btn-outline-warning w-100" id="clearChat">
                                 <i class="fa fa-trash me-2"></i>Clear Chat History
                             </button>
                         </div>
@@ -178,26 +144,441 @@
         border-color: rgba(25, 135, 84, 0.3) !important;
         color: #198754 !important;
     }
+
+    .message-item {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+        background-color: #0d6efd !important;
+    }
+
+    .expert-message {
+        background-color: #198754 !important;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
 </style>
 
-<!-- Auto-scroll to bottom of chat -->
 <script>
+    const userId = {{ id }};
+    const expertId = {{ expert_id }};
+    let lastMessageId = 0;
+    let autoRefreshInterval;
+    let isSending = false;
+
+    // Load messages on page load
     document.addEventListener('DOMContentLoaded', function() {
-        const chatContainer = document.querySelector('.chat-container');
-        if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+        // First load initial messages from Django template
+        renderInitialMessages();
+
+        // Then setup AJAX functionality
+        setupAutoRefresh();
+        focusMessageInput();
+    });
+
+    // Render initial messages from Django template
+    function renderInitialMessages() {
+        const container = document.getElementById('chatMessagesContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Hide loading indicator since we're using template data
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
         }
 
-        // Focus on message input
-        const messageInput = document.querySelector('input[name="message"]');
+        // Check if there are messages in the template
+        {% if messages %}
+            let html = '';
+            let maxId = 0;
+
+            {% for chat in messages %}
+                {% if chat.from_id.id == id %}
+                    <!-- Incoming Messages (From User to Expert) -->
+                    html += `
+                        <div class="d-flex mb-3 message-item" data-message-id="{{ chat.id }}">
+                            <div class="flex-shrink-0">
+                                <img class="rounded-circle"
+                                     src="/static/adminhome/img/user.jpg"
+                                     style="width: 40px; height: 40px;">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="bg-primary rounded p-3 user-message">
+                                    <p class="mb-1 text-white">{{ chat.message|escapejs }}</p>
+                                    <small class="text-light">{{ chat.date|date:"M d, Y H:i" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                {% elif chat.from_id.id == expert_id %}
+                    <!-- Outgoing Messages (From Expert to User) -->
+                    html += `
+                        <div class="d-flex mb-3 message-item flex-row-reverse" data-message-id="{{ chat.id }}">
+                            <div class="flex-shrink-0">
+                                <img class="rounded-circle"
+                                     src="/static/adminhome/img/user.jpg"
+                                     style="width: 40px; height: 40px;">
+                            </div>
+                            <div class="flex-grow-1 me-3">
+                                <div class="bg-success rounded p-3 expert-message">
+                                    <p class="mb-1 text-white">{{ chat.message|escapejs }}</p>
+                                    <small class="text-light">{{ chat.date|date:"M d, Y H:i" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                {% endif %}
+
+                // Update last message ID
+                if ({{ chat.id }} > maxId) {
+                    maxId = {{ chat.id }};
+                }
+            {% endfor %}
+
+            container.innerHTML = html;
+            lastMessageId = maxId;
+
+        {% else %}
+            // No messages
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fa fa-comments fa-3x text-muted mb-3"></i>
+                    <h5 class="text-white">No Messages Yet</h5>
+                    <p class="text-muted">Start a conversation with this user</p>
+                </div>
+            `;
+        {% endif %}
+
+        scrollToBottom();
+    }
+
+    // Send message via AJAX
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (isSending) return;
+
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value.trim();
+        const sendButton = document.getElementById('sendButton');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        if (!message) {
+            showWarning('Please enter a message');
+            return;
+        }
+
+        // Disable send button while sending
+        isSending = true;
+        sendButton.disabled = true;
+        const originalButtonText = sendButton.innerHTML;
+        sendButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
+
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(`/myapp/chatwithuser_post/${userId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                messageInput.value = '';
+                showSuccess('Message sent successfully');
+                // Append the new message immediately
+                appendNewMessage({
+                    id: data.chat_id,
+                    message: data.message_text,
+                    date: data.date,
+                    from_id: data.from_id,
+                    to_id: data.to_id,
+                    is_expert: true
+                });
+                lastMessageId = data.chat_id;
+            } else {
+                throw new Error(data.message || 'Failed to send message');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+            showError(error.message || 'Failed to send message. Please try again.');
+        })
+        .finally(() => {
+            // Re-enable send button
+            isSending = false;
+            sendButton.disabled = false;
+            sendButton.innerHTML = originalButtonText;
+            messageInput.focus();
+        });
+    });
+
+    // Append a single new message
+    function appendNewMessage(msg) {
+        const container = document.getElementById('chatMessagesContainer');
+
+        // If container shows "No Messages", clear it first
+        if (container.innerHTML.includes('No Messages Yet')) {
+            container.innerHTML = '';
+        }
+
+        const isExpertMessage = msg.is_expert;
+        const messageClass = isExpertMessage ? 'expert-message' : 'user-message';
+        const alignmentClass = isExpertMessage ? 'flex-row-reverse' : '';
+        const marginClass = isExpertMessage ? 'me-3' : 'ms-3';
+
+        // Format date
+        const date = new Date(msg.date);
+        const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const formattedDate = date.toLocaleDateString();
+
+        const messageHtml = `
+            <div class="d-flex mb-3 message-item ${alignmentClass}" data-message-id="${msg.id}">
+                <div class="flex-shrink-0">
+                    <img class="rounded-circle"
+                         src="/static/adminhome/img/user.jpg"
+                         style="width: 40px; height: 40px;">
+                </div>
+                <div class="flex-grow-1 ${marginClass}">
+                    <div class="rounded p-3 ${messageClass}">
+                        <p class="mb-1 text-white">${escapeHtml(msg.message)}</p>
+                        <small class="text-light">${formattedTime} • ${formattedDate}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', messageHtml);
+        scrollToBottom();
+    }
+
+    // Refresh messages button
+    document.getElementById('refreshMessages').addEventListener('click', function() {
+        loadNewMessages();
+        showInfo('Messages refreshed');
+    });
+
+    // Clear chat button
+    document.getElementById('clearChat').addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all chat history? This action cannot be undone.')) {
+            showWarning('Clear chat feature coming soon...');
+        }
+    });
+
+    // Setup auto-refresh every 3 seconds
+    function setupAutoRefresh() {
+        autoRefreshInterval = setInterval(() => {
+            checkNewMessages();
+        }, 3000);
+    }
+
+    // Check for new messages (polling)
+    function checkNewMessages() {
+        // Only check if we have a last message ID
+        if (lastMessageId === 0) return;
+
+        fetch(`/myapp/get_chat_messages/${userId}/?last_id=${lastMessageId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success' && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        appendNewMessage(msg);
+                    });
+                    lastMessageId = Math.max(...data.messages.map(msg => msg.id));
+
+                    // Show notification for new messages (only if window is not focused)
+                    if (data.messages.length > 0 && !document.hasFocus()) {
+                        showNotification(`${data.messages.length} new message(s)`, 'info');
+                    }
+                }
+            })
+            .catch(error => console.error('Error checking new messages:', error));
+    }
+
+    // Load all messages via AJAX (for refresh)
+    function loadNewMessages() {
+        fetch(`/myapp/get_chat_messages/${userId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    renderMessages(data.messages);
+                    if (data.messages.length > 0) {
+                        lastMessageId = Math.max(...data.messages.map(msg => msg.id));
+                    }
+                } else {
+                    showError('Failed to load messages: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error loading messages:', error);
+                showError('Failed to load messages. Please try again.');
+            });
+    }
+
+    // Render messages to the chat container (for AJAX refresh)
+    function renderMessages(messages) {
+        const container = document.getElementById('chatMessagesContainer');
+
+        if (messages.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fa fa-comments fa-3x text-muted mb-3"></i>
+                    <h5 class="text-white">No Messages Yet</h5>
+                    <p class="text-muted">Start a conversation with this user</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        messages.forEach(msg => {
+            const isExpertMessage = msg.is_expert;
+            const messageClass = isExpertMessage ? 'expert-message' : 'user-message';
+            const alignmentClass = isExpertMessage ? 'flex-row-reverse' : '';
+            const marginClass = isExpertMessage ? 'me-3' : 'ms-3';
+
+            // Format date
+            const date = new Date(msg.date);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const formattedDate = date.toLocaleDateString();
+
+            html += `
+                <div class="d-flex mb-3 message-item ${alignmentClass}" data-message-id="${msg.id}">
+                    <div class="flex-shrink-0">
+                        <img class="rounded-circle"
+                             src="/static/adminhome/img/user.jpg"
+                             style="width: 40px; height: 40px;">
+                    </div>
+                    <div class="flex-grow-1 ${marginClass}">
+                        <div class="rounded p-3 ${messageClass}">
+                            <p class="mb-1 text-white">${escapeHtml(msg.message)}</p>
+                            <small class="text-light">${formattedTime} • ${formattedDate}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        scrollToBottom();
+    }
+
+    // Scroll to bottom of chat
+    function scrollToBottom() {
+        const container = document.getElementById('chatMessagesContainer');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    // Focus on message input
+    function focusMessageInput() {
+        const messageInput = document.getElementById('messageInput');
         if (messageInput) {
             messageInput.focus();
         }
+    }
 
-        // Auto-refresh messages every 5 seconds
-        setInterval(function() {
-            location.reload();
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Notification functions
+    function showSuccess(message) {
+        showNotification(message, 'success');
+    }
+
+    function showError(message) {
+        showNotification(message, 'danger');
+    }
+
+    function showInfo(message) {
+        showNotification(message, 'info');
+    }
+
+    function showWarning(message) {
+        showNotification(message, 'warning');
+    }
+
+    function showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notif => {
+            notif.remove();
+        });
+
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show notification`;
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
         }, 5000);
+    }
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    });
+
+    // Handle Enter key for sending (but allow Shift+Enter for new line)
+    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+        }
     });
 </script>
 {% endblock %}

@@ -89,7 +89,7 @@ class Chat(models.Model):
     from_id=models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_id')
     to_id=models.ForeignKey(User, on_delete=models.CASCADE, related_name='to_id')
     message=models.CharField(max_length=1000)
-    date = models.DateField()
+    date = models.DateTimeField()
 
 class Capital(models.Model):
     requierd_capital=models.CharField(max_length=50)

@@ -45,22 +45,48 @@ import yfinance as yf
 from django.shortcuts import render
 from datetime import datetime, time
 
+from datetime import datetime, time
+from django.shortcuts import render
+import yfinance as yf
+
+
+def _safe_last(df, column, default=0):
+    if df is not None and not df.empty and column in df.columns:
+        return round(df[column].iloc[-1], 2)
+    return default
+
+
+def _safe_change(df, default=0):
+    if (
+        df is not None
+        and not df.empty
+        and "Open" in df.columns
+        and "Close" in df.columns
+        and df["Open"].iloc[-1] != 0
+    ):
+        return round(
+            ((df["Close"].iloc[-1] - df["Open"].iloc[-1]) / df["Open"].iloc[-1]) * 100,
+            2,
+        )
+    return default
+
 @login_required(login_url='/myapp/login_page/')
+
 def admin_home(request):
     # =========================
-    # INDEX DATA
+    # INDEX DATA (SAFE)
     # =========================
-    nifty = yf.Ticker("^NSEI").history(period="1d")
-    sensex = yf.Ticker("^BSESN").history(period="1d")
+    nifty_df = yf.Ticker("^NSEI").history(period="1d")
+    sensex_df = yf.Ticker("^BSESN").history(period="1d")
 
-    nifty_price = round(nifty["Close"].iloc[-1], 2)
-    nifty_change = round(((nifty["Close"].iloc[-1] - nifty["Open"].iloc[-1]) / nifty["Open"].iloc[-1]) * 100, 2)
+    nifty_price = _safe_last(nifty_df, "Close")
+    nifty_change = _safe_change(nifty_df)
 
-    sensex_price = round(sensex["Close"].iloc[-1], 2)
-    sensex_change = round(((sensex["Close"].iloc[-1] - sensex["Open"].iloc[-1]) / sensex["Open"].iloc[-1]) * 100, 2)
+    sensex_price = _safe_last(sensex_df, "Close")
+    sensex_change = _safe_change(sensex_df)
 
     # =========================
-    # STOCK DATA
+    # STOCK DATA (SAFE)
     # =========================
     symbols = {
         "RELIANCE": "RELIANCE.NS",
@@ -71,18 +97,16 @@ def admin_home(request):
 
     stock_rows = []
     for name, symbol in symbols.items():
-        data = yf.Ticker(symbol).history(period="1d")
-        price = round(data["Close"].iloc[-1], 2)
-        change = round(((data["Close"].iloc[-1] - data["Open"].iloc[-1]) / data["Open"].iloc[-1]) * 100, 2)
+        df = yf.Ticker(symbol).history(period="1d")
 
         stock_rows.append({
             "name": name,
-            "price": price,
-            "change": change,
+            "price": _safe_last(df, "Close"),
+            "change": _safe_change(df),
         })
 
     # =========================
-    # FOREX DATA (TOP PAIRS)
+    # FOREX DATA (SAFE)
     # =========================
     forex_pairs = {
         "USD / INR": "USDINR=X",
@@ -93,14 +117,12 @@ def admin_home(request):
 
     forex_rows = []
     for name, symbol in forex_pairs.items():
-        fx = yf.Ticker(symbol).history(period="1d")
-        rate = round(fx["Close"].iloc[-1], 4)
-        change = round(((fx["Close"].iloc[-1] - fx["Open"].iloc[-1]) / fx["Open"].iloc[-1]) * 100, 2)
+        df = yf.Ticker(symbol).history(period="1d")
 
         forex_rows.append({
             "pair": name,
-            "rate": rate,
-            "change": change,
+            "rate": _safe_last(df, "Close"),
+            "change": _safe_change(df),
         })
 
     # =========================
@@ -122,6 +144,7 @@ def admin_home(request):
     }
 
     return render(request, "admin/adminhome.html", context)
+
 
 
 def loginpost(request):
@@ -272,23 +295,49 @@ def delete_notification(request,id):
     deletenotification=Notification.objects.get(id=id)
     deletenotification.delete()
     return redirect('/myapp/view_notification/')
+from datetime import datetime, time
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+import yfinance as yf
+
+
+def _safe_last(df, column, default=0):
+    if df is not None and not df.empty and column in df.columns:
+        return round(df[column].iloc[-1], 2)
+    return default
+
+
+def _safe_change(df, default=0):
+    if (
+        df is not None
+        and not df.empty
+        and "Open" in df.columns
+        and "Close" in df.columns
+        and df["Open"].iloc[-1] != 0
+    ):
+        return round(
+            ((df["Close"].iloc[-1] - df["Open"].iloc[-1]) / df["Open"].iloc[-1]) * 100,
+            2,
+        )
+    return default
+
 
 @login_required(login_url='/myapp/login_page/')
 def expert_home(request):
     # =========================
-    # INDEX DATA
+    # INDEX DATA (SAFE)
     # =========================
-    nifty = yf.Ticker("^NSEI").history(period="1d")
-    sensex = yf.Ticker("^BSESN").history(period="1d")
+    nifty_df = yf.Ticker("^NSEI").history(period="1d")
+    sensex_df = yf.Ticker("^BSESN").history(period="1d")
 
-    nifty_price = round(nifty["Close"].iloc[-1], 2)
-    nifty_change = round(((nifty["Close"].iloc[-1] - nifty["Open"].iloc[-1]) / nifty["Open"].iloc[-1]) * 100, 2)
+    nifty_price = _safe_last(nifty_df, "Close")
+    nifty_change = _safe_change(nifty_df)
 
-    sensex_price = round(sensex["Close"].iloc[-1], 2)
-    sensex_change = round(((sensex["Close"].iloc[-1] - sensex["Open"].iloc[-1]) / sensex["Open"].iloc[-1]) * 100, 2)
+    sensex_price = _safe_last(sensex_df, "Close")
+    sensex_change = _safe_change(sensex_df)
 
     # =========================
-    # STOCK DATA
+    # STOCK DATA (SAFE)
     # =========================
     symbols = {
         "RELIANCE": "RELIANCE.NS",
@@ -299,18 +348,16 @@ def expert_home(request):
 
     stock_rows = []
     for name, symbol in symbols.items():
-        data = yf.Ticker(symbol).history(period="1d")
-        price = round(data["Close"].iloc[-1], 2)
-        change = round(((data["Close"].iloc[-1] - data["Open"].iloc[-1]) / data["Open"].iloc[-1]) * 100, 2)
+        df = yf.Ticker(symbol).history(period="1d")
 
         stock_rows.append({
             "name": name,
-            "price": price,
-            "change": change,
+            "price": _safe_last(df, "Close"),
+            "change": _safe_change(df),
         })
 
     # =========================
-    # FOREX DATA (TOP PAIRS)
+    # FOREX DATA (SAFE)
     # =========================
     forex_pairs = {
         "USD / INR": "USDINR=X",
@@ -321,14 +368,12 @@ def expert_home(request):
 
     forex_rows = []
     for name, symbol in forex_pairs.items():
-        fx = yf.Ticker(symbol).history(period="1d")
-        rate = round(fx["Close"].iloc[-1], 4)
-        change = round(((fx["Close"].iloc[-1] - fx["Open"].iloc[-1]) / fx["Open"].iloc[-1]) * 100, 2)
+        df = yf.Ticker(symbol).history(period="1d")
 
         forex_rows.append({
             "pair": name,
-            "rate": rate,
-            "change": change,
+            "rate": _safe_last(df, "Close"),
+            "change": _safe_change(df),
         })
 
     # =========================
@@ -349,7 +394,8 @@ def expert_home(request):
         "forex": forex_rows,
     }
 
-    return render(request,'expert/expertheader.html',context)
+    return render(request, 'expert/experthome.html', context)
+
 
 
 @login_required(login_url='/myapp/login_page/')
@@ -444,37 +490,146 @@ def manage_tips(request):
         'hold_tips': hold_tips,
     })
 
-def chatwithuser(request,id):
+
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+import json
+from datetime import datetime
+
+
+def chatwithuser(request, id):
     expertid = request.user.id
     investerid = id
     messages = Chat.objects.filter(
-        Q(from_id=investerid, to_id=expertid) | Q(from_id=expertid, to_id=investerid)).order_by('date')
+        Q(from_id_id=investerid, to_id_id=expertid) | Q(from_id_id=expertid, to_id_id=investerid)
+    ).order_by('date')
 
-    print(messages)
-    return render(request, 'expert/chat.html',{"messages":messages,"id":investerid,})
-
-def chatwithuser_post(request,id):
-    sender_id = request.user.id
-    receiver_id = id
-    message = request.POST['message']
-    print(sender_id, receiver_id)
-
-    if not sender_id or not receiver_id or not message:
-        return JsonResponse({'error': 'Missing required fields.'}, status=400)
-
+    # Get user information from User model
     try:
-        sender = User.objects.get(id=sender_id)
-        receiver = User.objects.get(id=receiver_id)
+        user = User.objects.get(id=investerid)
+        user_name = user.username  # or user.first_name, user.last_name
     except User.DoesNotExist:
-        return JsonResponse({'error': 'Invalid sender or receiver ID'}, status=400)
+        user_name = f"User {investerid}"
 
-    Chat.objects.create(
-        from_id=sender,
-        to_id=receiver,
-        message=message,
-        date=datetime.now()
-    )
-    return redirect('/myapp/chatwithuser/' + str(receiver_id))
+    return render(request, 'expert/chat.html', {
+        "messages": messages,
+        "id": investerid,
+        "user_name": user_name,
+        "expert_id": expertid,
+    })
+
+
+def get_chat_messages(request, id):
+    if request.method == 'GET':
+        expertid = request.user.id
+        investerid = id
+
+        try:
+            # Check if last_id parameter is provided for polling
+            last_id = request.GET.get('last_id', 0)
+
+            messages = Chat.objects.filter(
+                Q(from_id_id=investerid, to_id_id=expertid) | Q(from_id_id=expertid, to_id_id=investerid)
+            )
+
+            # If last_id is provided, only get messages newer than that
+            if last_id:
+                messages = messages.filter(id__gt=last_id)
+
+            messages = messages.order_by('date')
+
+            messages_list = []
+            for chat in messages:
+                messages_list.append({
+                    "id": chat.id,
+                    "message": chat.message,
+                    "date": chat.date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "from_id": chat.from_id_id,
+                    "to_id": chat.to_id_id,
+                    "is_expert": chat.from_id_id == expertid,
+                    "from_username": chat.from_id.username if chat.from_id else "Unknown",
+                })
+
+            return JsonResponse({
+                "status": "success",
+                "messages": messages_list,
+                "expert_id": expertid,
+                "user_id": investerid,
+                "total": len(messages_list)
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            }, status=500)
+
+    return JsonResponse({
+        "status": "error",
+        "message": "Invalid request method"
+    }, status=405)
+
+
+def chatwithuser_post(request, id):
+    if request.method == 'POST':
+        try:
+            sender_id = request.user.id
+            receiver_id = id
+            message = request.POST.get('message', '').strip()
+
+            # For AJAX requests with JSON data
+            if not message and request.body:
+                try:
+                    data = json.loads(request.body)
+                    message = data.get('message', '').strip()
+                except json.JSONDecodeError:
+                    pass
+
+            if not sender_id or not receiver_id or not message:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Missing required fields.'
+                }, status=400)
+
+            try:
+                # Use User model instead of Login
+                sender = User.objects.get(id=sender_id)
+                receiver = User.objects.get(id=receiver_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid sender or receiver ID'
+                }, status=400)
+
+            # Create the chat message
+            chat = Chat.objects.create(
+                from_id=sender,
+                to_id=receiver,
+                message=message,
+                date=datetime.now()
+            )
+
+            # Return success response with message details
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Message sent successfully',
+                'chat_id': chat.id,
+                'from_id': sender_id,
+                'to_id': receiver_id,
+                'message_text': message,
+                'date': chat.date.strftime("%Y-%m-%d %H:%M:%S")
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    }, status=405)
 
 def viewrequestexpert(request,id):
     reqs = User_request.objects.get(Investers_id=id,status='accepted')
@@ -528,48 +683,54 @@ def createportfolio(request, id):
     return render(request, 'expert/createportfolio.html', context)
 
 
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.contrib import messages
+import yfinance as yf
+
 def createportfolio_post(request):
     """
     POST PAGE
     Saves portfolio using live price from yfinance
+    Stores company symbol WITHOUT .NS in DB
     """
     if request.method == "POST":
         investor_id = request.POST.get("investor_id")
-        company_name = request.POST.get("company")
+        company_name = request.POST.get("company")  # e.g. TCS, RELIANCE, HDFC BANK
         amount = float(request.POST.get("amount"))
-        description = request.POST.get("description")  # optional if used elsewhere
 
-        # Company → Symbol map
-        company_symbols = {
-            "RELIANCE": "RELIANCE.NS",
-            "TCS": "TCS.NS",
-            "INFOSYS": "INFY.NS",
-            "HDFC BANK": "HDFCBANK.NS",
-            "ICICI BANK": "ICICIBANK.NS",
-        }
+        # =========================
+        # BUILD YFINANCE SYMBOL
+        # =========================
+        # "HDFC BANK" -> "HDFCBANK.NS"
+        yahoo_symbol = company_name.replace(" ", "").upper() + ".NS"
 
-        symbol = company_symbols.get(company_name)
-
-        if not symbol:
-            messages.error(request, "Invalid company selected.")
-            return redirect('/myapp/createportfolio/' + investor_id)
-
-        # Fetch live price again (SECURITY)
+        # =========================
+        # FETCH LIVE PRICE (SAFE)
+        # =========================
         try:
-            data = yf.Ticker(symbol).history(period="1d")
-            live_price = round(data["Close"].iloc[-1], 2)
+            df = yf.Ticker(yahoo_symbol).history(period="1d")
+            if df.empty:
+                raise ValueError("No market data")
+            live_price = round(df["Close"].iloc[-1], 2)
         except Exception:
-            messages.error(request, "Unable to fetch stock price.")
+            messages.error(request, "Unable to fetch live stock price.")
             return redirect('/myapp/createportfolio/' + investor_id)
 
-        # Calculate number of stocks
+        # =========================
+        # CALCULATE STOCK QTY
+        # =========================
         number_of_stocks = round(amount / live_price, 2) if live_price > 0 else 0
 
-        # Save portfolio
+        # =========================
+        # SAVE PORTFOLIO
+        # =========================
         portfolio = UserPortfolio()
         portfolio.Expert = Expert.objects.get(LOGIN=request.user)
         portfolio.Investers = Investers.objects.get(id=investor_id)
-        portfolio.company = company_name
+
+        portfolio.company = yahoo_symbol.replace(".NS", "")  # e.g. TCS, HDFCBANK
+
         portfolio.date = timezone.now().strftime("%Y-%m-%d %H:%M")
         portfolio.price_per_stock_when_bought = str(live_price)
         portfolio.number_of_stocks = str(number_of_stocks)
@@ -935,6 +1096,7 @@ def run_scanner():
                             "ltf_high": round(ltf_fvg["gap_high"], 5),
                             "chart": chart
                         })
+                        print(alerts)
 
         except Exception as e:
             print(f"Error {symbol}: {e}")
@@ -942,7 +1104,6 @@ def run_scanner():
 
     return alerts, current_prices
 
-# ===================== DJANGO VIEWS =====================
 @never_cache
 def dashboard_view(request):
     alerts, prices = run_scanner()
@@ -1034,6 +1195,119 @@ def request_expert_user(request):
         user_request.amount = request.POST['amount']
         user_request.save()
         return JsonResponse({'status': 'success'})
+
+
+
+def get_live_price_from_company(company_name):
+
+    try:
+        symbol = company_name.replace(" ", "").upper() + ".NS"
+        df = yf.Ticker(symbol).history(period="1d")
+        if df is not None and not df.empty:
+            return round(df["Close"].iloc[-1], 2)
+    except Exception:
+        pass
+    return 0
+
+def get_user_portfolios(request):
+    investor_login_id = request.POST['lid']
+
+    portfolios = UserPortfolio.objects.filter(
+        Investers__LOGIN_id=investor_login_id
+    )
+
+    response = []
+
+    for port in portfolios:
+        current_price = get_live_price_from_company(port.company)
+
+        qty = float(port.number_of_stocks)
+        buy_price = float(port.price_per_stock_when_bought)
+
+        invested_value = round(qty * buy_price, 2)
+        current_value = round(qty * current_price, 2)
+        profit_loss = round(current_value - invested_value, 2)
+
+        response.append({
+            "Expert": port.Expert.name,
+            "company": port.company,
+            "current_price": current_price,
+            "profit_loss": profit_loss,
+        })
+
+    return JsonResponse({"portfolios": response})
+
+
+def view_tip_users(request):
+    expert_id = Assgin_expert.objects.get(Investers__LOGIN_id=request.POST['lid']).Expert_id
+    tipss =  Tips.objects.filter(Expert_id=expert_id)
+    tips = []
+    for tip in tipss:
+        tips.append({
+            "id": tip.id,
+            "Expert": tip.Expert.name,
+            "company": tip.company,
+            "sector": tip.sector,
+            "recommendation": tip.recommendation,
+            "tips": tip.tips,
+            "description": tip.description,
+        })
+    return JsonResponse({"tips": tips})
+
+
+def chat_with_expert(request):
+    expert_id = Assgin_expert.objects.get(Investers__LOGIN_id=request.POST['lid']).Expert_id
+    sender_id = request.POST['lid']
+    receiver_id = Expert.objects.get(id=expert_id).LOGIN_id
+    chat = Chat()
+    chat.from_id_id = sender_id
+    chat.to_id_id   = receiver_id
+    chat.message = request.POST['message']
+    chat.date = datetime.now()
+    chat.save()
+    return  JsonResponse({'status': 'success'})
+
+def view_chat_user(request):
+    expert_id = Assgin_expert.objects.get(Investers__LOGIN_id=request.POST['lid']).Expert_id
+    sender_id = request.POST['lid']
+    receiver_id = Expert.objects.get(id=expert_id).LOGIN_id
+    chat = Chat.objects.filter(
+        Q(from_id_id=sender_id, to_id_id=receiver_id) | Q(from_id_id=receiver_id, to_id_id=sender_id)
+    )
+    chats=[]
+    for i in chat:
+        chats.append({
+            "id": i.id,
+            "from_id": str(i.from_id_id),
+            "to_id": str(i.to_id_id),
+            "message": str(i.message),
+            "date": str(i.date),
+        })
+        print(chats,'hgchgfhfg')
+    return JsonResponse({'chat': chats,'expert_name':Expert.objects.get(id=expert_id).name})
+
+
+def send_complaint_user(request):
+    complaints = Complaints()
+    complaints.Investers = Investers.objects.get(LOGIN_id=request.POST['lid'])
+    complaints.conplaint = request.POST['complaint']
+    complaints.replay = 'pending'
+    complaints.date = datetime.today()
+    complaints.save()
+    return JsonResponse({'status':'success'})
+
+def view_replies(request):
+    complaints = Complaints.objects.filter(Investers = Investers.objects.get(LOGIN_id=request.POST['lid']))
+    replies = []
+    for i in complaints:
+        replies.append({
+            "id": i.id,
+            "complaint": i.conplaint,
+            "replay": i.replay,
+            "date": i.date,
+        })
+    return JsonResponse({'replies': replies})
+
 
 
 def logouts(request):

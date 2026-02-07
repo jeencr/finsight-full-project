@@ -2,6 +2,11 @@ import 'package:finsight_app/requestexpert.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'ChatPage.dart';
+import 'ComplaintPage.dart';
+import 'PortfolioPage.dart';
+import 'TipsPage.dart';
+
 class UserHome extends StatefulWidget {
   const UserHome({super.key});
 
@@ -32,45 +37,25 @@ class _UserHomeState extends State<UserHome> {
     });
   }
 
-  // Navigation functions - TODO: Implement actual navigation
+  // Navigation functions
   void _viewPortfolio() {
     print("Navigate to Portfolio");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => PortfolioPage()));
-  }
-
-  void _viewExpertInsights() {
-    print("Navigate to Expert Insights");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => ExpertInsightsPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => PortfolioPage()));
   }
 
   void _viewTips() {
     print("Navigate to Tips");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => TipsPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TipsPage()));
   }
 
   void _fileComplaint() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ComplaintPage()));
     print("Navigate to Complaint");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => ComplaintPage()));
   }
 
   void _chatWithExpert() {
     print("Navigate to Chat");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage()));
-  }
-
-  void _viewMarketAnalysis() {
-    print("Navigate to Market Analysis");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => MarketAnalysisPage()));
-  }
-
-  void _viewInvestmentHistory() {
-    print("Navigate to Investment History");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => InvestmentHistoryPage()));
-  }
-
-  void _viewSettings() {
-    print("Navigate to Settings");
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage()));
   }
 
   void _requestExpert() {
@@ -201,10 +186,6 @@ class _UserHomeState extends State<UserHome> {
               print("Notifications");
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.person_outline, color: Colors.white),
-            onPressed: _viewSettings,
-          ),
         ],
       ),
       drawer: Drawer(
@@ -261,72 +242,43 @@ class _UserHomeState extends State<UserHome> {
                 leading: Icon(Icons.account_balance_wallet, color: _lightColor),
                 title: const Text('Portfolio', style: TextStyle(color: Colors.white)),
                 onTap: () {
+                  Navigator.pop(context);
                   _viewPortfolio();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.insights, color: _lightColor),
-                title: const Text('Expert Insights', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  _viewExpertInsights();
-                  Navigator.pop(context);
                 },
               ),
               ListTile(
                 leading: Icon(Icons.tips_and_updates, color: _lightColor),
                 title: const Text('Investment Tips', style: TextStyle(color: Colors.white)),
                 onTap: () {
+                  Navigator.pop(context);
                   _viewTips();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.trending_up, color: _lightColor),
-                title: const Text('Market Analysis', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  _viewMarketAnalysis();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.history, color: _lightColor),
-                title: const Text('Investment History', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  _viewInvestmentHistory();
-                  Navigator.pop(context);
                 },
               ),
               ListTile(
                 leading: Icon(Icons.chat_bubble_outline, color: _lightColor),
                 title: const Text('Chat with Expert', style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  _chatWithExpert();
                   Navigator.pop(context);
+                  _chatWithExpert();
                 },
               ),
               ListTile(
                 leading: Icon(Icons.contact_support, color: _lightColor),
                 title: const Text('Request Expert', style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  _requestExpert();
                   Navigator.pop(context);
+                  _requestExpert();
                 },
               ),
               ListTile(
                 leading: Icon(Icons.report_problem, color: _lightColor),
                 title: const Text('File Complaint', style: TextStyle(color: Colors.white)),
                 onTap: () {
-                  _fileComplaint();
                   Navigator.pop(context);
+                  _fileComplaint();
                 },
               ),
-              Divider(color: _lightColor.withOpacity(0.3)),
-              ListTile(
-                leading: Icon(Icons.settings, color: _lightColor),
-                title: const Text('Settings', style: TextStyle(color: Colors.white)),
-                onTap: _viewSettings,
-              ),
+              const Divider(color: Color(0xFF6C7293)),
               ListTile(
                 leading: Icon(Icons.logout, color: _primaryColor),
                 title: Text('Logout', style: TextStyle(color: _primaryColor)),
@@ -373,7 +325,7 @@ class _UserHomeState extends State<UserHome> {
                               const SizedBox(height: 4),
                               Text(
                                 _username,
-                                style:  TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: isSmallScreen ? 20 : 24,
                                   fontWeight: FontWeight.bold,
@@ -529,25 +481,11 @@ class _UserHomeState extends State<UserHome> {
                         onTap: _viewPortfolio,
                       ),
                       _buildDashboardCard(
-                        icon: Icons.insights,
-                        title: 'Expert Insights',
-                        subtitle: 'Professional analysis',
-                        color: Colors.green,
-                        onTap: _viewExpertInsights,
-                      ),
-                      _buildDashboardCard(
                         icon: Icons.tips_and_updates,
                         title: 'Investment Tips',
                         subtitle: 'Daily recommendations',
                         color: Colors.orange,
                         onTap: _viewTips,
-                      ),
-                      _buildDashboardCard(
-                        icon: Icons.trending_up,
-                        title: 'Market Analysis',
-                        subtitle: 'Real-time data',
-                        color: Colors.purple,
-                        onTap: _viewMarketAnalysis,
                       ),
                       _buildDashboardCard(
                         icon: Icons.contact_support,
@@ -574,7 +512,7 @@ class _UserHomeState extends State<UserHome> {
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -600,9 +538,9 @@ class _UserHomeState extends State<UserHome> {
                       ),
                       const SizedBox(height: 10),
                       _buildQuickActionButton(
-                        icon: Icons.history,
-                        label: 'Investment History',
-                        onTap: _viewInvestmentHistory,
+                        icon: Icons.tips_and_updates,
+                        label: 'View Investment Tips',
+                        onTap: _viewTips,
                       ),
                     ],
                   ),
@@ -700,32 +638,32 @@ class _UserHomeState extends State<UserHome> {
                         ),
                         const SizedBox(height: 12),
                         _buildActivityItem(
-                          icon: Icons.trending_up,
-                          title: 'Stock Purchase',
-                          subtitle: 'Reliance Industries - ₹25,000',
+                          icon: Icons.tips_and_updates,
+                          title: 'New Investment Tip',
+                          subtitle: 'Expert recommendation received',
                           time: '2 hours ago',
                           color: Colors.green,
                         ),
                         _buildActivityItem(
-                          icon: Icons.trending_down,
-                          title: 'Stock Sale',
-                          subtitle: 'TATA Motors - ₹15,000',
+                          icon: Icons.account_balance_wallet,
+                          title: 'Portfolio Update',
+                          subtitle: 'Investment value increased',
                           time: '1 day ago',
-                          color: Colors.red,
+                          color: Colors.blue,
                         ),
                         _buildActivityItem(
-                          icon: Icons.account_balance,
-                          title: 'Dividend Received',
-                          subtitle: 'Infosys - ₹1,200',
+                          icon: Icons.chat_bubble_outline,
+                          title: 'Expert Chat',
+                          subtitle: 'Message from your assigned expert',
                           time: '3 days ago',
-                          color: Colors.blue,
+                          color: Colors.teal,
                         ),
                         _buildActivityItem(
                           icon: Icons.contact_support,
                           title: 'Expert Requested',
                           subtitle: 'Financial Planning - Pending',
                           time: '5 days ago',
-                          color: Colors.teal,
+                          color: Colors.orange,
                         ),
                       ],
                     ),

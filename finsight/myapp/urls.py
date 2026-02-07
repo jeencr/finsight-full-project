@@ -52,5 +52,12 @@ urlpatterns = [
     path('createportfolio_post/',views.createportfolio_post),
     path('forex_prediction/', views.dashboard_view, name='dashboard'),
     path('api/alerts/', views.alerts_api, name='alerts_api'),
+    path('get_user_portfolios/', views.get_user_portfolios,),
+path('view_tip_users/', views.view_tip_users,),
+path('view_chat_user/', views.view_chat_user,),
+path('chat_with_expert/', views.chat_with_expert,),
+path('get_chat_messages/<id>/', views.get_chat_messages,),
+path('view_replies/', views.view_replies,),
+path('send_complaint_user/', views.send_complaint_user,),
 
 ]
